@@ -1,0 +1,161 @@
+import { useState, useEffect } from 'react';
+import { reportsAPI, venuesAPI } from '../../api';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useToast } from '../../components/Toast';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+const COLORS = ['#1a6b5c', '#d4875a', '#2563eb', '#38a169', '#805ad5'];
+
+const VenueReports = () => {
+  const toast = useToast();
+  const [venues, setVenues] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState('');
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await venuesAPI.getOwnerVenues();
+        setVenues(res.data);
+        if (res.data.length > 0) setSelectedVenue(res.data[0]._id);
+      } catch { /* ignore */ }
+      finally { setLoading(false); }
+    };
+    fetch();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedVenue) return;
+    const fetch = async () => {
+      try {
+        const res = await reportsAPI.getVenueReport(selectedVenue);
+        setReport(res.data);
+      } catch { toast('Failed to load report', 'error'); }
+    };
+    fetch();
+  }, [selectedVenue]);
+
+  if (loading) return <LoadingSpinner fullPage />;
+
+  const bookingStatusData = report ? [
+    { name: 'Approved', value: report.bookings?.approved || 0 },
+    { name: 'Pending', value: report.bookings?.pending || 0 },
+    { name: 'Declined', value: report.bookings?.declined || 0 },
+    { name: 'Counter-Proposed', value: report.bookings?.counterProposed || 0 },
+  ].filter(d => d.value > 0) : [];
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>📊 Venue Reports</h1>
+        <select className="form-control" style={{ width: 220 }} value={selectedVenue} onChange={e => setSelectedVenue(e.target.value)}>
+          {venues.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
+        </select>
+      </div>
+
+      {venues.length === 0 ? (
+        <div className="empty-state"><div className="empty-state-icon">📊</div><h3>No venues to report on</h3></div>
+      ) : !report ? (
+        <div className="empty-state"><LoadingSpinner /></div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+            <div className="stat-card" style={{ flex: 1 }}>
+              <div className="stat-icon" style={{ background: '#e8f5f2', color: 'var(--primary)' }}>📅</div>
+              <div className="stat-info"><div className="stat-value">{report.bookings?.total || 0}</div><div className="stat-label">Total Requests</div></div>
+            </div>
+            <div className="stat-card" style={{ flex: 1 }}>
+              <div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>✅</div>
+              <div className="stat-info"><div className="stat-value">{report.bookings?.approved || 0}</div><div className="stat-label">Confirmed Bookings</div></div>
+            </div>
+            <div className="stat-card" style={{ flex: 1 }}>
+              <div className="stat-icon" style={{ background: '#fff3e0', color: 'var(--secondary)' }}>⭐</div>
+              <div className="stat-info"><div className="stat-value">{report.venue?.rating ? report.venue.rating.toFixed(1) : '—'}</div><div className="stat-label">Avg Rating</div></div>
+            </div>
+            <div className="stat-card" style={{ flex: 1 }}>
+              <div className="stat-icon" style={{ background: '#f5f3ff', color: '#805ad5' }}>💬</div>
+              <div className="stat-info"><div className="stat-value">{report.venue?.reviewCount || 0}</div><div className="stat-label">Reviews</div></div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+            <div className="card card-body">
+              <h3 className="mb-4">Booking Request Status</h3>
+              {bookingStatusData.length === 0 ? (
+                <div className="empty-state" style={{ height: 200 }}><p>No booking data yet</p></div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie data={bookingStatusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                      {bookingStatusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="card card-body">
+              <h3 className="mb-4">Feedback Summary</h3>
+              {!report.feedback?.count ? (
+                <div className="empty-state" style={{ height: 200 }}><p>No feedback yet for this venue</p></div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+                    {[
+                      { label: 'Overall', value: report.feedback?.avgOverall },
+                      { label: 'Venue & Ambience', value: report.feedback?.avgVenue },
+                      { label: 'Organization', value: report.feedback?.avgOrganization },
+                    ].map(item => (
+                      <div key={item.label}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                          <span>{item.label}</span>
+                          <strong>{item.value ? item.value.toFixed(1) : '—'} / 5</strong>
+                        </div>
+                        <div style={{ background: 'var(--border)', borderRadius: 4, height: 8 }}>
+                          <div style={{ background: 'var(--primary)', width: `${((item.value || 0) / 5) * 100}%`, height: 8, borderRadius: 4, transition: 'width 0.5s' }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+                    Based on {report.feedback?.count} review{report.feedback?.count !== 1 ? 's' : ''}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {report.monthlyBookings?.length > 0 && (
+            <div className="card card-body">
+              <h3 className="mb-4">Monthly Booking Requests</h3>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={report.monthlyBookings}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" name="Requests" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          <div className="card card-body mt-4">
+            <h3 className="mb-4">Venue Details</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, fontSize: 14 }}>
+              <div><span className="text-muted">Capacity</span><div style={{ fontWeight: 600 }}>{report.venue?.capacity} persons</div></div>
+              <div><span className="text-muted">Location</span><div style={{ fontWeight: 600 }}>{report.venue?.location?.area}, {report.venue?.location?.city}</div></div>
+              <div><span className="text-muted">Price per Day</span><div style={{ fontWeight: 600 }}>EGP {report.venue?.pricing?.perDay?.toLocaleString()}</div></div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default VenueReports;

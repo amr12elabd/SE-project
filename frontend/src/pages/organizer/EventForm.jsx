@@ -1,0 +1,193 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { eventsAPI, venuesAPI, usersAPI } from '../../api';
+import { useToast } from '../../components/Toast';
+import LoadingSpinner from '../../components/LoadingSpinner';
+
+const EventForm = () => {
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [venues, setVenues] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [form, setForm] = useState({
+    name: '', description: '', date: '', startTime: '10:00', endTime: '22:00',
+    venue: '', eventType: 'Pop-Up Café', expectedGuests: '', dressCode: 'Smart Casual',
+    agenda: '', totalBudget: '', status: 'Planning', staffMembers: []
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [vRes, sRes] = await Promise.all([venuesAPI.getAll(), usersAPI.getAll({ role: 'staff' })]);
+        setVenues(vRes.data);
+        setStaff(sRes.data);
+        if (isEdit) {
+          const eRes = await eventsAPI.getById(id);
+          const ev = eRes.data;
+          setForm({
+            name: ev.name || '', description: ev.description || '',
+            date: ev.date ? ev.date.split('T')[0] : '',
+            startTime: ev.startTime || '10:00', endTime: ev.endTime || '22:00',
+            venue: ev.venue?._id || '', eventType: ev.eventType || 'Pop-Up Café',
+            expectedGuests: ev.expectedGuests || '', dressCode: ev.dressCode || 'Smart Casual',
+            agenda: ev.agenda || '', totalBudget: ev.totalBudget || '',
+            status: ev.status || 'Planning',
+            staffMembers: ev.staffMembers?.map(s => s._id || s) || []
+          });
+        }
+      } catch { toast('Failed to load data', 'error'); }
+      finally { setLoading(false); }
+    };
+    fetchData();
+  }, [id]);
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const toggleStaff = (staffId) => {
+    setForm(f => ({
+      ...f,
+      staffMembers: f.staffMembers.includes(staffId)
+        ? f.staffMembers.filter(s => s !== staffId)
+        : [...f.staffMembers, staffId]
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.date) { toast('Name and date are required', 'error'); return; }
+    setSaving(true);
+    try {
+      const payload = { ...form, expectedGuests: Number(form.expectedGuests) || 0, totalBudget: Number(form.totalBudget) || 0 };
+      if (isEdit) {
+        await eventsAPI.update(id, payload);
+        toast('Event updated successfully!', 'success');
+      } else {
+        const res = await eventsAPI.create(payload);
+        toast('Event created successfully!', 'success');
+        navigate(`/events/${res.data._id}`);
+        return;
+      }
+      navigate('/events');
+    } catch (err) { toast(err.response?.data?.message || 'Failed to save event', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  if (loading) return <LoadingSpinner fullPage />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>{isEdit ? 'Edit Event' : 'Create New Event'}</h1>
+        <button className="btn btn-ghost" onClick={() => navigate(isEdit ? `/events/${id}` : '/events')}>← Back</button>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, alignItems: 'start' }}>
+          <div>
+            <div className="card card-body mb-4">
+              <h3 className="mb-4">Basic Information</h3>
+              <div className="form-group">
+                <label className="form-label">Event Name *</label>
+                <input className="form-control" placeholder="e.g. Cairo Autumn Brew Café" value={form.name} onChange={set('name')} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea className="form-control" rows={4} placeholder="Describe your pop-up café event..." value={form.description} onChange={set('description')} />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Event Date *</label>
+                  <input type="date" className="form-control" value={form.date} onChange={set('date')} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Event Type</label>
+                  <input className="form-control" value={form.eventType} onChange={set('eventType')} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Start Time</label>
+                  <input type="time" className="form-control" value={form.startTime} onChange={set('startTime')} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">End Time</label>
+                  <input type="time" className="form-control" value={form.endTime} onChange={set('endTime')} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Agenda</label>
+                <textarea className="form-control" rows={3} placeholder="10:00 Setup | 12:00 Doors Open | ..." value={form.agenda} onChange={set('agenda')} />
+              </div>
+            </div>
+
+            <div className="card card-body mb-4">
+              <h3 className="mb-4">Staff Assignment</h3>
+              {staff.length === 0 ? <p className="text-muted text-sm">No staff members found. Create staff accounts first.</p> : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {staff.map(s => (
+                    <label key={s._id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px', border: '1px solid var(--border)', borderRadius: 8, background: form.staffMembers.includes(s._id) ? 'var(--primary-light)' : 'white' }}>
+                      <input type="checkbox" checked={form.staffMembers.includes(s._id)} onChange={() => toggleStaff(s._id)} />
+                      <div className="avatar avatar-sm">{s.name[0]}</div>
+                      <div>
+                        <div style={{ fontWeight: 500, fontSize: 14 }}>{s.name}</div>
+                        <div className="text-xs text-muted">{s.email}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="card card-body mb-4">
+              <h3 className="mb-4">Event Details</h3>
+              <div className="form-group">
+                <label className="form-label">Venue</label>
+                <select className="form-control" value={form.venue} onChange={set('venue')}>
+                  <option value="">Select a venue (optional)</option>
+                  {venues.map(v => <option key={v._id} value={v._id}>{v.name} - {v.location?.area}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Expected Guests</label>
+                <input type="number" className="form-control" min={0} value={form.expectedGuests} onChange={set('expectedGuests')} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Dress Code</label>
+                <select className="form-control" value={form.dressCode} onChange={set('dressCode')}>
+                  {['Casual', 'Smart Casual', 'Business Casual', 'Cocktail', 'Formal'].map(d => <option key={d}>{d}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Total Budget (EGP)</label>
+                <input type="number" className="form-control" min={0} value={form.totalBudget} onChange={set('totalBudget')} />
+              </div>
+              {isEdit && (
+                <div className="form-group">
+                  <label className="form-label">Status</label>
+                  <select className="form-control" value={form.status} onChange={set('status')}>
+                    {['Planning', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
+                {saving ? 'Saving...' : isEdit ? 'Update Event' : 'Create Event'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default EventForm;
