@@ -72,7 +72,7 @@ async function seed() {
   });
 
   const venueOwner1 = await User.create({
-    name: 'Khalid Mansour', email: 'venueowner@popeyez.com', passwordHash: pw,
+    name: 'Seifedin Khaled', email: 'venueowner@popeyez.com', passwordHash: pw,
     role: 'venueOwner', phone: '+20 106 789 0123',
     bio: 'Owner of premium event spaces in Zamalek and Dokki.', isActive: true
   });

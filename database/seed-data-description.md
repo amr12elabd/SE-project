@@ -17,7 +17,7 @@ The seed script clears all 15 collections then reseeds from scratch.
 | Mariam Tarek | vendor2@popeyez.com | password123 | vendor |
 | Omar Farouk | vendor3@popeyez.com | password123 | vendor |
 | Layla Abdel-Aziz | guest@popeyez.com | password123 | guest |
-| Hassan Mahmoud | venueowner@popeyez.com | password123 | venueOwner |
+| Seifeldin Khaled | venueowner@popeyez.com | password123 | venueOwner |
 | Fatma Ibrahim | venueowner2@popeyez.com | password123 | venueOwner |
 
 ---
@@ -25,7 +25,7 @@ The seed script clears all 15 collections then reseeds from scratch.
 ## Venues (4 Cairo venues)
 
 ### 1. The Rooftop Garden — Zamalek
-- **Owner:** Hassan Mahmoud (venueowner@popeyez.com)
+- **Owner:** Seifedin Khaled (venueowner@popeyez.com)
 - **Capacity:** 150 persons
 - **Location:** 12 Ibrahim Pasha St, Zamalek, Cairo
 - **Pricing:** EGP 8,000/day, EGP 1,200/hour
