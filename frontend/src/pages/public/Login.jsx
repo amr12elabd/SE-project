@@ -3,11 +3,22 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const demoCredentials = [
-  { role: 'Organizer', email: 'organizer@popeyez.com' },
-  { role: 'Staff', email: 'staff@popeyez.com' },
-  { role: 'Vendor', email: 'vendor@popeyez.com' },
-  { role: 'Guest', email: 'guest@popeyez.com' },
-  { role: 'Venue Owner', email: 'venueowner@popeyez.com' },
+  { name: 'Sara Hassan',          role: 'Organizer',    email: 'organizer@popeyez.com' },
+  { name: 'Rami Adel',            role: 'Organizer',    email: 'organizer2@popeyez.com' },
+  { name: 'Ahmed Karim',          role: 'Staff',        email: 'staff@popeyez.com' },
+  { name: 'Nour El-Din',          role: 'Staff',        email: 'staff2@popeyez.com' },
+  { name: 'Lina Saad',            role: 'Staff',        email: 'staff3@popeyez.com' },
+  { name: 'Khaled Mansour',       role: 'Staff',        email: 'staff4@popeyez.com' },
+  { name: "Atwa's Bakery",         role: 'Vendor',       email: 'vendor@popeyez.com' },
+  { name: 'Cairo Coffee Supplies',role: 'Vendor',       email: 'vendor2@popeyez.com' },
+  { name: 'Nile Equipment',       role: 'Vendor',       email: 'vendor3@popeyez.com' },
+  { name: 'Nour Floral Design',   role: 'Vendor',       email: 'vendor4@popeyez.com' },
+  { name: 'SoundWave Productions',role: 'Vendor',       email: 'vendor5@popeyez.com' },
+  { name: 'Seifedin Khaled',      role: 'Venue Owner',  email: 'venueowner@popeyez.com' },
+  { name: 'Layla Nasser',         role: 'Venue Owner',  email: 'venueowner2@popeyez.com' },
+  { name: 'Tarek Bishara',        role: 'Venue Owner',  email: 'venueowner3@popeyez.com' },
+  { name: 'Yasmin Ibrahim',       role: 'Guest',        email: 'guest@popeyez.com' },
+  { name: 'Shady Peter',          role: 'Guest',        email: 'shady@popeyez.com' },
 ];
 
 const Login = () => {
@@ -76,16 +87,19 @@ const Login = () => {
         </div>
 
         <hr className="divider" style={{ margin: '24px 0' }} />
-        <div style={{ marginBottom: 12, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Quick Demo Login</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <div style={{ marginBottom: 10, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Quick Demo Login</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {demoCredentials.map((c, i) => (
-            <button key={i} className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)', justifyContent: 'flex-start', fontSize: 12 }}
-              onClick={() => quickLogin(c)}>
-              {c.role}
+            <button key={i} onClick={() => quickLogin(c)}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '7px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-light, #ede9fe)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-secondary)'}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{c.name}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--border)', borderRadius: 4, padding: '2px 7px', marginLeft: 8, whiteSpace: 'nowrap' }}>[{c.role}]</span>
             </button>
           ))}
         </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>All demo accounts use password: <strong>password123</strong></p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 10 }}>All accounts use password: <strong>password123</strong></p>
       </div>
     </div>
   );
