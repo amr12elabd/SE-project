@@ -31,6 +31,13 @@ const VendorDashboard = () => {
     fetch();
   }, []);
 
+  const updateStatus = async (id, status) => {
+    try {
+      await sourcingAPI.updateStatus(id, { status });
+      setSourcing(prev => prev.map(item => item._id === id ? { ...item, status } : item));
+    } catch { /* ignore */ }
+  };
+
   if (loading) return <LoadingSpinner fullPage />;
 
   const pending = sourcing.filter(s => s.status === 'Pending').length;
@@ -77,12 +84,31 @@ const VendorDashboard = () => {
           {sourcing.length === 0 ? (
             <div className="empty-state" style={{ padding: 32 }}><p>No sourcing requests yet</p></div>
           ) : sourcing.slice(0, 5).map(s => (
-            <div key={s._id} style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontWeight: 500 }}>{s.event?.name || 'Event'}</div>
-                <div className="text-sm text-muted">📅 {new Date(s.deliveryDate).toLocaleDateString()} · {s.requestedItems?.length || 0} items</div>
+            <div key={s._id} style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{s.event?.name || 'Event'}</div>
+                  <div className="text-sm text-muted">📅 {new Date(s.deliveryDate).toLocaleDateString()} · {s.requestedItems?.length || 0} items</div>
+                </div>
+                <StatusBadge status={s.status} />
               </div>
-              <StatusBadge status={s.status} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+                {s.status === 'Pending' && (
+                  <>
+                    <button className="btn btn-primary btn-sm" onClick={() => updateStatus(s._id, 'Accepted')} style={{ minWidth: 100 }}>✓ Accept</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => updateStatus(s._id, 'Declined')} style={{ minWidth: 100 }}>✕ Decline</button>
+                  </>
+                )}
+                {s.status === 'Accepted' && (
+                  <button className="btn btn-outline btn-sm" onClick={() => updateStatus(s._id, 'Preparing')} style={{ minWidth: 150 }}>🏭 Start Preparing</button>
+                )}
+                {s.status === 'Preparing' && (
+                  <button className="btn btn-primary btn-sm" onClick={() => updateStatus(s._id, 'Out for Delivery')} style={{ minWidth: 170 }}>🚛 Out for Delivery</button>
+                )}
+                {s.status === 'Out for Delivery' && (
+                  <button className="btn btn-primary btn-sm" onClick={() => updateStatus(s._id, 'Delivered')} style={{ minWidth: 150 }}>📦 Mark Delivered</button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -113,7 +139,8 @@ const VendorDashboard = () => {
             { label: '👤 My Profile', to: '/vendor/profile' },
             { label: '📦 Product Catalogue', to: '/vendor/catalogue' },
             { label: '📥 Incoming Orders', to: '/vendor/sourcing' },
-            { label: '🚛 Delivery Status', to: '/vendor/delivery' },
+            { label: '� Change Status', to: '/vendor/sourcing' },
+            { label: '�🚛 Delivery Status', to: '/vendor/delivery' },
             { label: '🧾 Submit Invoice', to: '/vendor/submit-invoice' },
             { label: '📊 Invoice Status', to: '/vendor/invoices' },
           ].map(a => (

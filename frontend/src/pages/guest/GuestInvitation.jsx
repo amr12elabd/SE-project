@@ -105,16 +105,14 @@ const GuestInvitation = () => {
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Your response:</span>
                         <StatusBadge status={guest?.rsvpStatus} />
-                        {guest?.rsvpStatus !== 'Not Attending' && (
-                          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-                            {RSVP_OPTIONS.filter(o => o.value !== guest?.rsvpStatus).map(opt => (
-                              <button key={opt.value} className="btn btn-ghost btn-sm" style={{ color: opt.color, borderColor: opt.color }}
-                                onClick={() => handleRSVP(guest._id, inv._id, opt.value)}>
-                                Change to {opt.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+                          {RSVP_OPTIONS.filter(o => o.value !== guest?.rsvpStatus).map(opt => (
+                            <button key={opt.value} className="btn btn-ghost btn-sm" style={{ color: opt.color, borderColor: opt.color }}
+                              onClick={() => handleRSVP(guest._id, inv._id, opt.value)}>
+                              Change to {opt.label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
 

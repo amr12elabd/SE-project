@@ -23,12 +23,14 @@ const StarRating = ({ value, onChange, label }) => (
 
 const FeedbackForm = () => {
   const toast = useToast();
-  const [events, setEvents] = useState([]);
+  const [eventOptions, setEventOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [wasUpdated, setWasUpdated] = useState(false);
   const [form, setForm] = useState({
     event: '',
+    guest: '',
     overallRating: 0,
     foodRating: 0,
     venueRating: 0,
@@ -40,11 +42,26 @@ const FeedbackForm = () => {
     const fetch = async () => {
       try {
         const res = await invitationsAPI.getGuestInvitations();
-        const attended = res.data.filter(i => i.guest?.rsvpStatus === 'Attending' || i.guest?.checkInStatus);
-        const evts = attended.map(i => i.event).filter(Boolean);
-        const unique = evts.filter((e, i, a) => a.findIndex(x => x._id === e._id) === i);
-        setEvents(unique);
-        if (unique.length > 0) setForm(f => ({ ...f, event: unique[0]._id }));
+        const attendedOptions = res.data
+          .filter(i => i.guest?.rsvpStatus === 'Attending' || i.guest?.checkInStatus)
+          .map(i => ({
+            event: i.event,
+            guest: i.guest?._id || i.guest,
+          }))
+          .filter(opt => opt.event && opt.guest);
+
+        const uniqueOptions = attendedOptions.filter((opt, idx, arr) =>
+          arr.findIndex(item => item.event?._id === opt.event?._id && item.guest === opt.guest) === idx
+        );
+
+        setEventOptions(uniqueOptions);
+        if (uniqueOptions.length > 0) {
+          setForm(f => ({
+            ...f,
+            event: uniqueOptions[0].event._id,
+            guest: uniqueOptions[0].guest,
+          }));
+        }
       } catch { /* ignore */ }
       finally { setLoading(false); }
     };
@@ -54,12 +71,17 @@ const FeedbackForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.event) return toast('Please select an event', 'error');
+    if (!form.guest) return toast('Unable to match your guest profile for this event', 'error');
     if (form.overallRating === 0) return toast('Overall rating is required', 'error');
     setSubmitting(true);
     try {
-      await feedbackAPI.submit(form.event, form);
+      const res = await feedbackAPI.submit(form.event, { ...form, guest: form.guest });
       setSubmitted(true);
-      toast('Thank you for your feedback!', 'success');
+      setWasUpdated(Boolean(res?.data && res.data._id));
+      toast(
+        res?.data && res.data._id ? 'Your feedback has been updated successfully!' : 'Thank you for your feedback!',
+        'success'
+      );
     } catch (err) { toast(err.response?.data?.message || 'Submission failed', 'error'); }
     finally { setSubmitting(false); }
   };
@@ -69,9 +91,11 @@ const FeedbackForm = () => {
   if (submitted) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, textAlign: 'center' }}>
       <div style={{ fontSize: 80, marginBottom: 20 }}>🎉</div>
-      <h2>Thank You for Your Feedback!</h2>
+      <h2>{wasUpdated ? 'Your Feedback Has Been Updated!' : 'Thank You for Your Feedback!'}</h2>
       <p className="text-muted" style={{ maxWidth: 400, lineHeight: 1.7 }}>
-        Your review helps organizers improve future events. We really appreciate you taking the time to share your experience.
+        {wasUpdated
+          ? 'Your updated review has been saved successfully.'
+          : 'Your review helps organizers improve future events. We really appreciate you taking the time to share your experience.'}
       </p>
       <div style={{ fontSize: 36, marginTop: 20 }}>{'★'.repeat(form.overallRating)}{'☆'.repeat(5 - form.overallRating)}</div>
     </div>
@@ -81,7 +105,7 @@ const FeedbackForm = () => {
     <div>
       <div className="page-header"><h1>⭐ Leave Feedback</h1></div>
 
-      {events.length === 0 ? (
+      {eventOptions.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">⭐</div>
           <h3>No events to review</h3>
@@ -92,8 +116,23 @@ const FeedbackForm = () => {
           <div className="card card-body mb-4">
             <div className="form-group">
               <label className="form-label">Select Event *</label>
-              <select className="form-control" value={form.event} onChange={e => setForm(f => ({ ...f, event: e.target.value }))}>
-                {events.map(e => <option key={e._id} value={e._id}>{e.name} — {new Date(e.date).toLocaleDateString()}</option>)}
+              <select
+                className="form-control"
+                value={form.event}
+                onChange={e => {
+                  const selected = eventOptions.find(opt => opt.event?._id === e.target.value);
+                  setForm(f => ({
+                    ...f,
+                    event: e.target.value,
+                    guest: selected?.guest || '',
+                  }));
+                }}
+              >
+                {eventOptions.map(({ event, guest }) => (
+                  <option key={event._id} value={event._id}>
+                    {event.name} — {new Date(event.date).toLocaleDateString()}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

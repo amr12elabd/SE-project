@@ -26,16 +26,38 @@ const getEventFeedback = async (req, res, next) => {
 const submitFeedback = async (req, res, next) => {
   try {
     const { guest, overallRating, foodRating, venueRating, organizationRating, comments } = req.body;
-    if (!guest || !overallRating) return res.status(400).json({ message: 'Guest and overall rating are required' });
+    let guestId = guest;
 
-    const existing = await Feedback.findOne({ event: req.params.eventId, guest });
-    if (existing) return res.status(400).json({ message: 'Feedback already submitted' });
+    if (!guestId && req.user?.email) {
+      const guestByEmail = await Guest.findOne({ event: req.params.eventId, email: req.user.email });
+      if (guestByEmail) guestId = guestByEmail._id;
+    }
 
-    const guestDoc = await Guest.findById(guest);
+    if (!guestId && req.user?._id) {
+      const guestByUser = await Guest.findOne({ event: req.params.eventId, user: req.user._id });
+      if (guestByUser) guestId = guestByUser._id;
+    }
+
+    if (!guestId || !overallRating || Number(overallRating) < 1 || Number(overallRating) > 5) {
+      return res.status(400).json({ message: 'Valid guest and overall rating are required' });
+    }
+
+    const guestDoc = await Guest.findById(guestId);
     if (!guestDoc) return res.status(404).json({ message: 'Guest not found' });
 
+    const existing = await Feedback.findOne({ event: req.params.eventId, guest: guestId });
+    if (existing) {
+      await Feedback.deleteOne({ _id: existing._id });
+    }
+
     const feedback = await Feedback.create({
-      event: req.params.eventId, guest, overallRating, foodRating, venueRating, organizationRating, comments
+      event: req.params.eventId,
+      guest: guestId,
+      overallRating,
+      foodRating,
+      venueRating,
+      organizationRating,
+      comments,
     });
     res.status(201).json(feedback);
   } catch (err) { next(err); }
