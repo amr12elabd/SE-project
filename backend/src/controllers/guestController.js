@@ -84,14 +84,19 @@ const checkInGuest = async (req, res, next) => {
     }
 
     if (!guest) return res.status(404).json({ message: 'Guest not found' });
-    if (guest.checkInStatus) return res.status(400).json({ message: 'Guest already checked in' });
 
-    guest.checkInStatus = true;
-    guest.checkedInAt = new Date();
-    guest.checkedInBy = req.user._id;
+    if (guest.checkInStatus) {
+      guest.checkInStatus = false;
+      guest.checkedInAt = null;
+      guest.checkedInBy = null;
+    } else {
+      guest.checkInStatus = true;
+      guest.checkedInAt = new Date();
+      guest.checkedInBy = req.user._id;
+    }
     await guest.save();
 
-    res.json({ message: 'Guest checked in successfully', guest });
+    res.json({ message: guest.checkInStatus ? 'Guest checked in' : 'Check-in undone', guest });
   } catch (err) { next(err); }
 };
 

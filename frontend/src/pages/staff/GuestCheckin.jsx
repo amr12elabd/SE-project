@@ -4,6 +4,8 @@ import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
+const RSVP_STATUSES = ['Pending', 'Attending', 'Not Attending', 'Maybe'];
+
 const GuestCheckin = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
@@ -11,6 +13,7 @@ const GuestCheckin = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
+  const [updating, setUpdating] = useState(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -36,12 +39,25 @@ const GuestCheckin = () => {
     fetch();
   }, [selectedEvent]);
 
-  const handleCheckIn = async (guestId) => {
+  const toggleCheckIn = async (guest) => {
+    setUpdating(guest._id + '_checkin');
     try {
-      await guestsAPI.checkIn(guestId, {});
-      setGuests(prev => prev.map(g => g._id === guestId ? { ...g, checkInStatus: true, checkedInAt: new Date() } : g));
-      toast('Guest checked in successfully!', 'success');
-    } catch (err) { toast(err.response?.data?.message || 'Failed to check in', 'error'); }
+      const res = await guestsAPI.checkIn(guest._id, {});
+      const updated = res.data.guest;
+      setGuests(prev => prev.map(g => g._id === guest._id ? { ...g, checkInStatus: updated.checkInStatus, checkedInAt: updated.checkedInAt } : g));
+      toast(res.data.message, 'success');
+    } catch (err) { toast(err.response?.data?.message || 'Failed', 'error'); }
+    finally { setUpdating(null); }
+  };
+
+  const updateRSVP = async (guestId, rsvpStatus) => {
+    setUpdating(guestId + '_rsvp');
+    try {
+      await guestsAPI.updateRSVP(guestId, { rsvpStatus });
+      setGuests(prev => prev.map(g => g._id === guestId ? { ...g, rsvpStatus } : g));
+      toast(`RSVP updated to "${rsvpStatus}"`, 'success');
+    } catch (err) { toast(err.response?.data?.message || 'Failed to update RSVP', 'error'); }
+    finally { setUpdating(null); }
   };
 
   const filtered = guests.filter(g => {
@@ -93,27 +109,53 @@ const GuestCheckin = () => {
           <div>
             {filtered.map(g => (
               <div key={g._id} style={{ display: 'flex', gap: 14, padding: '14px 20px', borderBottom: '1px solid var(--border)', background: g.checkInStatus ? '#f0fff4' : 'white', alignItems: 'center' }}>
+                {/* Avatar */}
                 <div style={{ width: 44, height: 44, borderRadius: '50%', background: g.checkInStatus ? 'var(--success)' : 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.checkInStatus ? 'white' : 'var(--text-muted)', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
                   {g.checkInStatus ? '✓' : g.guestName[0]}
                 </div>
+
+                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600 }}>{g.guestName}</div>
                   <div className="text-sm text-muted">{g.email}</div>
-                  <div style={{ display: 'flex', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
-                    <StatusBadge status={g.rsvpStatus} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* RSVP dropdown */}
+                    <select
+                      className="form-control"
+                      value={g.rsvpStatus}
+                      disabled={updating === g._id + '_rsvp'}
+                      onChange={e => updateRSVP(g._id, e.target.value)}
+                      style={{ width: 148, fontSize: 12, padding: '3px 8px', height: 28 }}
+                    >
+                      {RSVP_STATUSES.map(s => <option key={s}>{s}</option>)}
+                    </select>
                     <span className="chip">{g.group}</span>
                     {g.dietaryPreferences?.length > 0 && <span style={{ fontSize: 11, color: 'var(--info)' }}>🥗 {g.dietaryPreferences.join(', ')}</span>}
                     {g.allergies?.length > 0 && <span style={{ fontSize: 11, color: 'var(--danger)' }}>⚠️ {g.allergies.join(', ')}</span>}
                   </div>
                 </div>
-                <div style={{ flexShrink: 0 }}>
+
+                {/* Check-in control */}
+                <div style={{ flexShrink: 0, textAlign: 'right' }}>
                   {g.checkInStatus ? (
-                    <div style={{ textAlign: 'right' }}>
-                      <div className="badge badge-success">✓ Checked In</div>
-                      {g.checkedInAt && <div className="text-xs text-muted mt-2">{new Date(g.checkedInAt).toLocaleTimeString()}</div>}
+                    <div>
+                      <div className="badge badge-success" style={{ display: 'block', marginBottom: 6 }}>✓ Checked In</div>
+                      {g.checkedInAt && <div className="text-xs text-muted" style={{ marginBottom: 6 }}>{new Date(g.checkedInAt).toLocaleTimeString()}</div>}
+                      <button
+                        className="btn btn-outline btn-sm"
+                        style={{ fontSize: 11, padding: '3px 10px', color: 'var(--danger)', borderColor: 'var(--danger)' }}
+                        disabled={updating === g._id + '_checkin'}
+                        onClick={() => toggleCheckIn(g)}
+                      >
+                        Undo
+                      </button>
                     </div>
                   ) : (
-                    <button className="btn btn-primary btn-sm" onClick={() => handleCheckIn(g._id)} disabled={g.rsvpStatus === 'Not Attending'}>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => toggleCheckIn(g)}
+                      disabled={updating === g._id + '_checkin' || g.rsvpStatus === 'Not Attending'}
+                    >
                       Check In
                     </button>
                   )}
