@@ -3,10 +3,20 @@ import { bookingsAPI } from '../../api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
+const BOOKING_STATUSES = ['Approved', 'Pending', 'Declined', 'Counter-Proposed'];
+
+const statusStyle = {
+  'Approved':         { color: '#065f46', background: '#d1fae5', border: '#6ee7b7' },
+  'Pending':          { color: '#92400e', background: '#fef3c7', border: '#fcd34d' },
+  'Declined':         { color: '#991b1b', background: '#fee2e2', border: '#fca5a5' },
+  'Counter-Proposed': { color: '#1e40af', background: '#dbeafe', border: '#93c5fd' },
+};
+
 const ConfirmedBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [updating, setUpdating] = useState(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -20,6 +30,16 @@ const ConfirmedBookings = () => {
     fetch();
   }, []);
 
+  const updateStatus = async (id, status) => {
+    setUpdating(id);
+    try {
+      await bookingsAPI.updateStatus(id, { status });
+      setBookings(prev => prev.map(b => b._id === id ? { ...b, status } : b));
+      toast(`Booking status updated to "${status}"`, 'success');
+    } catch (err) { toast(err.response?.data?.message || 'Failed to update', 'error'); }
+    finally { setUpdating(null); }
+  };
+
   const filtered = bookings.filter(b =>
     !search ||
     b.venue?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -32,29 +52,39 @@ const ConfirmedBookings = () => {
 
   if (loading) return <LoadingSpinner fullPage />;
 
-  const BookingCard = ({ b }) => (
-    <div className="card card-body" style={{ marginBottom: 12 }}>
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-        <div style={{ background: 'var(--primary-light)', borderRadius: 10, padding: '12px 16px', textAlign: 'center', flexShrink: 0 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>{new Date(b.date).getDate()}</div>
-          <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 600 }}>{new Date(b.date).toLocaleString('en', { month: 'short', year: '2-digit' })}</div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>🏛️ {b.venue?.name}</div>
-          <div style={{ color: 'var(--text-muted)', fontSize: 13, display: 'flex', gap: 16 }}>
-            <span>👤 Organizer: {b.organizer?.name}</span>
-            <span>📧 {b.organizer?.email}</span>
-            <span>👥 {b.expectedAttendees} attendees</span>
+  const BookingCard = ({ b }) => {
+    const st = statusStyle[b.status] || statusStyle['Approved'];
+    return (
+      <div className="card card-body" style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          <div style={{ background: 'var(--primary-light)', borderRadius: 10, padding: '12px 16px', textAlign: 'center', flexShrink: 0 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>{new Date(b.date).getDate()}</div>
+            <div style={{ fontSize: 11, color: 'var(--primary)', fontWeight: 600 }}>{new Date(b.date).toLocaleString('en', { month: 'short', year: '2-digit' })}</div>
           </div>
-          {b.event?.name && <div className="text-sm text-muted mt-1">🎭 Event: {b.event.name}</div>}
-          {b.specialRequirements && <div className="text-sm text-muted mt-1">📝 {b.specialRequirements}</div>}
-        </div>
-        <div style={{ flexShrink: 0 }}>
-          <span className="badge badge-success">✓ Confirmed</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>🏛️ {b.venue?.name}</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 13, display: 'flex', gap: 16 }}>
+              <span>👤 Organizer: {b.organizer?.name}</span>
+              <span>📧 {b.organizer?.email}</span>
+              <span>👥 {b.expectedAttendees} attendees</span>
+            </div>
+            {b.event?.name && <div className="text-sm text-muted mt-1">🎭 Event: {b.event.name}</div>}
+            {b.specialRequirements && <div className="text-sm text-muted mt-1">📝 {b.specialRequirements}</div>}
+          </div>
+          <div style={{ flexShrink: 0 }}>
+            <select
+              value={b.status}
+              disabled={updating === b._id}
+              onChange={e => updateStatus(b._id, e.target.value)}
+              style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', height: 32, borderRadius: 20, border: `1.5px solid ${st.border}`, background: st.background, color: st.color, cursor: 'pointer', outline: 'none' }}
+            >
+              {BOOKING_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div>
