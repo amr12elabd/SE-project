@@ -4,6 +4,7 @@ import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const dietaryOptions = ['Vegan', 'Vegetarian', 'Gluten Free', 'Dairy Free', 'Halal', 'Kosher', 'No Nuts'];
 
@@ -16,6 +17,7 @@ const GuestManagement = () => {
   const [editGuest, setEditGuest] = useState(null);
   const [form, setForm] = useState({ guestName: '', email: '', phone: '', event: '', group: 'General', dietaryPreferences: [], allergies: [], specialRequirements: '' });
   const [saving, setSaving] = useState(false);
+  const [qrGuest, setQrGuest] = useState(null);
   const toast = useToast();
 
   const fetchGuests = async () => {
@@ -144,6 +146,7 @@ const GuestManagement = () => {
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-ghost btn-sm" onClick={() => openModal(g)}>Edit</button>
+                        <button className="btn btn-outline btn-sm" onClick={() => setQrGuest(g)} title="Show QR Code">QR</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(g._id)}>Del</button>
                       </div>
                     </td>
@@ -196,6 +199,49 @@ const GuestManagement = () => {
           </div>
         </form>
       </Modal>
+
+      {/* QR Code Modal */}
+      {qrGuest && (
+        <div className="modal-overlay" onClick={() => setQrGuest(null)}>
+          <div className="modal" style={{ maxWidth: 340 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🎟️ Guest QR Code</h2>
+              <button className="modal-close" onClick={() => setQrGuest(null)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, paddingTop: 20 }}>
+              <div style={{ padding: 16, background: 'white', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.10)', border: '1px solid var(--border)' }}>
+                <QRCodeCanvas
+                  value={qrGuest._id}
+                  size={200}
+                  bgColor="#ffffff"
+                  fgColor="#1a6b5c"
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontWeight: 700, fontSize: 16 }}>{qrGuest.guestName}</div>
+                <div className="text-sm text-muted">{qrGuest.email}</div>
+                <div className="text-sm text-muted">{qrGuest.event?.name} · {qrGuest.group}</div>
+              </div>
+              <p className="text-xs text-muted" style={{ textAlign: 'center', margin: 0 }}>
+                Staff can scan this at the entrance using the Guest Check-In scanner
+              </p>
+              <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => {
+                const canvas = document.querySelector('#qr-print canvas') || document.querySelector('.modal canvas');
+                if (canvas) {
+                  const link = document.createElement('a');
+                  link.download = `qr-${qrGuest.guestName.replace(/\s+/g, '-')}.png`;
+                  link.href = canvas.toDataURL();
+                  link.click();
+                }
+              }}>
+                ⬇ Download QR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
