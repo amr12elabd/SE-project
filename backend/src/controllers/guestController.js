@@ -93,6 +93,7 @@ const checkInGuest = async (req, res, next) => {
       guest.checkInStatus = true;
       guest.checkedInAt = new Date();
       guest.checkedInBy = req.user._id;
+      guest.rsvpStatus = 'Attending';
     }
     await guest.save();
 

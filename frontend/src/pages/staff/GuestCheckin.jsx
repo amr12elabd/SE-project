@@ -44,7 +44,7 @@ const GuestCheckin = () => {
     try {
       const res = await guestsAPI.checkIn(guest._id, {});
       const updated = res.data.guest;
-      setGuests(prev => prev.map(g => g._id === guest._id ? { ...g, checkInStatus: updated.checkInStatus, checkedInAt: updated.checkedInAt } : g));
+      setGuests(prev => prev.map(g => g._id === guest._id ? { ...g, checkInStatus: updated.checkInStatus, checkedInAt: updated.checkedInAt, rsvpStatus: updated.rsvpStatus } : g));
       toast(res.data.message, 'success');
     } catch (err) { toast(err.response?.data?.message || 'Failed', 'error'); }
     finally { setUpdating(null); }
