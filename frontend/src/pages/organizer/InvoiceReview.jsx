@@ -4,6 +4,7 @@ import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Modal from '../../components/Modal';
 import { useToast } from '../../components/Toast';
+import { exportInvoicePDF } from '../../utils/exportPDF';
 
 const INVOICE_STATUSES = ['Pending Review', 'Approved', 'Rejected', 'Paid'];
 
@@ -91,8 +92,9 @@ const InvoiceReview = () => {
                         {INVOICE_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </td>
-                    <td>
+                    <td style={{ display: 'flex', gap: 6 }}>
                       <button className="btn btn-ghost btn-sm" onClick={() => setSelected(inv)}>View</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => exportInvoicePDF(inv)} title="Download PDF">📄 PDF</button>
                     </td>
                   </tr>
                 ))}
@@ -146,6 +148,11 @@ const InvoiceReview = () => {
               </div>
             )}
 
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn btn-primary" onClick={() => exportInvoicePDF(selected)}>
+                📄 Export PDF
+              </button>
+            </div>
           </div>
         )}
       </Modal>

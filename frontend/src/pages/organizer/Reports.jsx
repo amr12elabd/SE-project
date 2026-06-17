@@ -4,6 +4,7 @@ import DashboardCard from '../../components/DashboardCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { exportReportPDF } from '../../utils/exportPDF';
 
 const Reports = () => {
   const [events, setEvents] = useState([]);
@@ -71,6 +72,7 @@ const Reports = () => {
             {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
           </select>
           <button className="btn btn-outline" onClick={handleExport} disabled={exporting}>{exporting ? 'Exporting...' : '📤 Export CSV'}</button>
+          {report && <button className="btn btn-primary" onClick={() => exportReportPDF(report, events.find(e => e._id === selectedEvent)?.name)}>📄 Export PDF</button>}
         </div>
       </div>
 
