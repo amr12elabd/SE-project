@@ -5,11 +5,21 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import Modal from '../../components/Modal';
 import { useToast } from '../../components/Toast';
 
+const INVOICE_STATUSES = ['Pending Review', 'Approved', 'Rejected', 'Paid'];
+
+const statusColors = {
+  'Pending Review': '#92400e',
+  'Approved': '#1e40af',
+  'Rejected': '#991b1b',
+  'Paid': '#065f46',
+};
+
 const InvoiceReview = () => {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [selected, setSelected] = useState(null);
+  const [updating, setUpdating] = useState(null);
   const toast = useToast();
 
   const fetchInvoices = async () => {
@@ -23,12 +33,14 @@ const InvoiceReview = () => {
   useEffect(() => { fetchInvoices(); }, [filter]);
 
   const updateStatus = async (id, status) => {
+    setUpdating(id);
     try {
-      const res = await invoicesAPI.updateStatus(id, { status });
+      await invoicesAPI.updateStatus(id, { status });
       setInvoices(prev => prev.map(inv => inv._id === id ? { ...inv, status } : inv));
       if (selected?._id === id) setSelected(prev => ({ ...prev, status }));
-      toast(`Invoice ${status.toLowerCase()}`, 'success');
+      toast(`Status updated to "${status}"`, 'success');
     } catch (err) { toast(err.response?.data?.message || 'Failed to update', 'error'); }
+    finally { setUpdating(null); }
   };
 
   const totalPending = invoices.filter(i => i.status === 'Pending Review').reduce((s, i) => s + i.totalAmount, 0);
@@ -68,20 +80,19 @@ const InvoiceReview = () => {
                     <td className="text-sm text-muted">{inv.event?.name}</td>
                     <td style={{ fontWeight: 600 }}>{inv.totalAmount?.toLocaleString()}</td>
                     <td className="text-sm text-muted">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
-                    <td><StatusBadge status={inv.status} /></td>
                     <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button className="btn btn-ghost btn-sm" onClick={() => setSelected(inv)}>View</button>
-                        {inv.status === 'Pending Review' && (
-                          <>
-                            <button className="btn btn-primary btn-sm" onClick={() => updateStatus(inv._id, 'Approved')}>Approve</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => updateStatus(inv._id, 'Rejected')}>Reject</button>
-                          </>
-                        )}
-                        {inv.status === 'Approved' && (
-                          <button className="btn btn-outline btn-sm" onClick={() => updateStatus(inv._id, 'Paid')}>Mark Paid</button>
-                        )}
-                      </div>
+                      <select
+                        className="form-control"
+                        value={inv.status}
+                        disabled={updating === inv._id}
+                        onChange={e => updateStatus(inv._id, e.target.value)}
+                        style={{ fontSize: 12, padding: '3px 8px', height: 30, width: 140, color: statusColors[inv.status], fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        {INVOICE_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setSelected(inv)}>View</button>
                     </td>
                   </tr>
                 ))}
@@ -97,7 +108,18 @@ const InvoiceReview = () => {
             <div className="grid-2 mb-4">
               <div><div className="text-muted text-xs mb-1">VENDOR</div><div style={{ fontWeight: 500 }}>{selected.vendor?.name}</div><div className="text-sm text-muted">{selected.vendor?.email}</div></div>
               <div><div className="text-muted text-xs mb-1">EVENT</div><div style={{ fontWeight: 500 }}>{selected.event?.name}</div></div>
-              <div><div className="text-muted text-xs mb-1">STATUS</div><StatusBadge status={selected.status} /></div>
+              <div>
+                <div className="text-muted text-xs mb-1">STATUS</div>
+                <select
+                  className="form-control"
+                  value={selected.status}
+                  disabled={updating === selected._id}
+                  onChange={e => updateStatus(selected._id, e.target.value)}
+                  style={{ fontSize: 13, padding: '4px 10px', height: 32, color: statusColors[selected.status], fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {INVOICE_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
               <div><div className="text-muted text-xs mb-1">DUE DATE</div><div>{selected.dueDate ? new Date(selected.dueDate).toLocaleDateString() : '—'}</div></div>
             </div>
 
@@ -124,12 +146,6 @@ const InvoiceReview = () => {
               </div>
             )}
 
-            {selected.status === 'Pending Review' && (
-              <div className="modal-footer" style={{ padding: '16px 0 0', gap: 10, display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="btn btn-danger" onClick={() => { updateStatus(selected._id, 'Rejected'); setSelected(null); }}>Reject Invoice</button>
-                <button className="btn btn-primary" onClick={() => { updateStatus(selected._id, 'Approved'); setSelected(null); }}>Approve Invoice</button>
-              </div>
-            )}
           </div>
         )}
       </Modal>
