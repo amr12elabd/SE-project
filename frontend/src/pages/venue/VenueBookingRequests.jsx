@@ -39,8 +39,9 @@ const VenueBookingRequests = () => {
         payload.counterProposal = { date: responseForm.counterDate, price: responseForm.counterPrice, notes: responseForm.counterNotes };
       }
       await bookingsAPI.updateStatus(responding._id, payload);
-      setBookings(prev => prev.map(b => b._id === responding._id ? { ...b, ...payload } : b));
       setResponding(null);
+      await load();
+      if (payload.status) setFilter(payload.status);
       toast('Response sent to organizer', 'success');
     } catch (err) { toast(err.response?.data?.message || 'Failed to respond', 'error'); }
   };
