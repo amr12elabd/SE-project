@@ -5,6 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { useToast } from '../../components/Toast';
+
+const EVENT_STATUSES = ['Planning', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
 
 const StaffDashboard = () => {
   const { user } = useAuth();
@@ -12,6 +15,8 @@ const StaffDashboard = () => {
   const [events, setEvents] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingEvent, setUpdatingEvent] = useState(null);
+  const toast = useToast();
 
   useEffect(() => {
     const fetch = async () => {
@@ -24,6 +29,16 @@ const StaffDashboard = () => {
     };
     fetch();
   }, []);
+
+  const updateEventStatus = async (id, status) => {
+    setUpdatingEvent(id);
+    try {
+      await eventsAPI.updateStatus(id, status);
+      setEvents(prev => prev.map(ev => ev._id === id ? { ...ev, status } : ev));
+      toast(`Event status updated to "${status}"`, 'success');
+    } catch (err) { toast(err.response?.data?.message || 'Failed to update', 'error'); }
+    finally { setUpdatingEvent(null); }
+  };
 
   if (loading) return <LoadingSpinner fullPage />;
 
@@ -57,7 +72,15 @@ const StaffDashboard = () => {
                 <div style={{ fontWeight: 500 }}>{ev.name}</div>
                 <div className="text-sm text-muted">📅 {new Date(ev.date).toLocaleDateString()}</div>
               </div>
-              <StatusBadge status={ev.status} />
+              <select
+                value={ev.status}
+                disabled={updatingEvent === ev._id}
+                onChange={e => updateEventStatus(ev._id, e.target.value)}
+                onClick={e => e.stopPropagation()}
+                style={{ fontSize: 12, fontWeight: 600, padding: '3px 8px', height: 28, borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', cursor: 'pointer' }}
+              >
+                {EVENT_STATUSES.map(s => <option key={s}>{s}</option>)}
+              </select>
             </div>
           ))}
         </div>

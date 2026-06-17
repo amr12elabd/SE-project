@@ -26,6 +26,7 @@ export const eventsAPI = {
   update: (id, data) => api.put(`/events/${id}`, data),
   delete: (id) => api.delete(`/events/${id}`),
   getDashboard: (id) => api.get(`/events/${id}/dashboard`),
+  updateStatus: (id, status) => api.patch(`/events/${id}/status`, { status }),
 };
 
 // Venues

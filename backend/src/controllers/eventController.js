@@ -117,4 +117,13 @@ const getEventDashboard = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getEvents, createEvent, getEvent, updateEvent, deleteEvent, getEventDashboard };
+const updateEventStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const event = await Event.findByIdAndUpdate(req.params.id, { status }, { new: true, runValidators: true });
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    res.json(event);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getEvents, createEvent, getEvent, updateEvent, deleteEvent, getEventDashboard, updateEventStatus };
