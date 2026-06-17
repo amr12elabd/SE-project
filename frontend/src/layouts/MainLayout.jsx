@@ -2,10 +2,31 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { notificationsAPI, eventsAPI, guestsAPI } from '../api';
-import { ToastProvider } from '../components/Toast';
+import { ToastProvider, useToast } from '../components/Toast';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
+
+const SocketNotificationListener = () => {
+  const socketRef = useSocket();
+  const toast = useToast();
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    const socket = socketRef?.current;
+    if (!socket) return;
+    const handler = (notif) => {
+      const icons = { booking: '🏛️', task: '✅', invoice: '🧾', general: '🔔' };
+      toast(`${icons[notif.type] || '🔔'} ${notif.title}`, 'info');
+      setUnread(n => n + 1);
+    };
+    socket.on('notification', handler);
+    return () => socket.off('notification', handler);
+  }, [socketRef?.current]);
+
+  return null;
+};
 
 const MainLayout = () => {
   const { user } = useAuth();
@@ -57,6 +78,7 @@ const MainLayout = () => {
 
   return (
     <ToastProvider>
+      <SocketNotificationListener />
       {/* Daily guest reminder modal */}
       {reminder && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>

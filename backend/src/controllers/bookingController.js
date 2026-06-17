@@ -1,6 +1,7 @@
 const BookingRequest = require('../models/BookingRequest');
 const Venue = require('../models/Venue');
 const Notification = require('../models/Notification');
+const { notifyUser } = require('../socket');
 
 const getBookings = async (req, res, next) => {
   try {
@@ -36,12 +37,13 @@ const createBooking = async (req, res, next) => {
       organizer: req.user._id, venue, event, date, expectedAttendees, specialRequirements
     });
 
-    await Notification.create({
+    const notif = await Notification.create({
       user: venueDoc.owner,
       title: 'New Booking Request',
       message: `You have a new booking request from ${req.user.name} for ${new Date(date).toDateString()}`,
       type: 'booking'
     });
+    notifyUser(venueDoc.owner, notif);
 
     const populated = await BookingRequest.findById(booking._id)
       .populate('organizer', 'name email')
@@ -76,12 +78,13 @@ const updateBookingStatus = async (req, res, next) => {
     if (counterProposal) booking.counterProposal = counterProposal;
     await booking.save();
 
-    await Notification.create({
+    const notif2 = await Notification.create({
       user: booking.organizer,
       title: `Booking ${status}`,
-      message: `Your booking request has been ${status.toLowerCase()}`,
+      message: `Your booking request for ${booking.venue?.name} has been ${status.toLowerCase()}`,
       type: 'booking'
     });
+    notifyUser(booking.organizer, notif2);
 
     res.json(booking);
   } catch (err) { next(err); }

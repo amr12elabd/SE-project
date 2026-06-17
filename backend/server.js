@@ -1,14 +1,22 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const connectDB = require('./src/config/database');
 const errorHandler = require('./src/middleware/errorHandler');
+const { initSocket } = require('./src/socket');
 
 const app = express();
+const server = http.createServer(app);
+initSocket(server);
 
 connectDB();
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = process.env.CLIENT_URL
+  ? [process.env.CLIENT_URL, 'http://localhost:5173']
+  : ['http://localhost:5173'];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,4 +43,4 @@ app.get('/api/health', (req, res) => res.json({ status: 'PopEyez API is running'
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`PopEyez server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`PopEyez server running on port ${PORT}`));

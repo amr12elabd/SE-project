@@ -1,6 +1,7 @@
 const Task = require('../models/Task');
 const Event = require('../models/Event');
 const Notification = require('../models/Notification');
+const { notifyUser } = require('../socket');
 
 const getTasks = async (req, res, next) => {
   try {
@@ -33,12 +34,13 @@ const createTask = async (req, res, next) => {
     });
 
     if (assignedTo) {
-      await Notification.create({
+      const notif = await Notification.create({
         user: assignedTo,
         title: 'New Task Assigned',
         message: `You have been assigned: ${title}`,
         type: 'task'
       });
+      notifyUser(assignedTo, notif);
     }
 
     const populated = await Task.findById(task._id)
