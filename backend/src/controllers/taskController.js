@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const { notifyUser } = require('../socket');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
+const { log } = require('../services/activityLogger');
 
 const getTasks = async (req, res, next) => {
   try {
@@ -94,8 +95,12 @@ const updateTaskStatus = async (req, res, next) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
+    const prevStatus = task.status;
     task.status = status;
     await task.save();
+
+    log({ user: req.user._id, role: req.user.role, action: `Task ${status}`, entityType: 'Task', entityId: task._id, oldStatus: prevStatus, newStatus: status, description: `Updated task "${task.title}" from ${prevStatus} to ${status}` });
+
     res.json(task);
   } catch (err) { next(err); }
 };

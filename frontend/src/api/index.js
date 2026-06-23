@@ -154,6 +154,11 @@ export const reportsAPI = {
   getVenueReport: (venueId) => api.get(`/venues/${venueId}/report`),
 };
 
+// Activity Log
+export const activityAPI = {
+  getMyActivity: (params) => api.get('/activity', { params }),
+};
+
 // Notifications
 export const notificationsAPI = {
   getAll: (params) => api.get('/notifications', { params }),

@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const { notifyUser } = require('../socket');
 const emailService = require('../services/emailService');
 const User = require('../models/User');
+const { log } = require('../services/activityLogger');
 
 const getBookings = async (req, res, next) => {
   try {
@@ -50,6 +51,9 @@ const createBooking = async (req, res, next) => {
     const populated = await BookingRequest.findById(booking._id)
       .populate('organizer', 'name email')
       .populate('venue', 'name location');
+
+    log({ user: req.user._id, role: req.user.role, action: 'Submitted Booking Request', entityType: 'Booking', entityId: booking._id, newStatus: 'Pending', description: `Submitted booking request for ${venueDoc.name} on ${new Date(date).toDateString()}`, metadata: { venue: venueDoc.name, date } });
+
     res.status(201).json(populated);
   } catch (err) { next(err); }
 };
@@ -93,6 +97,8 @@ const updateBookingStatus = async (req, res, next) => {
     if (organizer?.email) {
       emailService.bookingStatusUpdate({ organizerEmail: organizer.email, organizerName: organizer.name, venueName: booking.venue?.name, eventName: '', date: booking.date, status: booking.status, ownerMessage: booking.ownerMessage, counterProposal: booking.counterProposal }).catch(() => {});
     }
+
+    log({ user: req.user._id, role: 'venueOwner', action: `Booking ${status}`, entityType: 'Booking', entityId: booking._id, oldStatus: 'Pending', newStatus: status, description: `${status} booking from organizer for ${new Date(booking.date).toDateString()}`, metadata: { venueName: booking.venue?.name } });
 
     res.json(booking);
   } catch (err) { next(err); }
@@ -145,6 +151,8 @@ const respondToCounter = async (req, res, next) => {
       message: `The organizer has ${accept ? 'accepted' : 'declined'} your counter proposal`,
       type: 'booking'
     });
+
+    log({ user: req.user._id, role: 'organizer', action: `Counter Proposal ${accept ? 'Accepted' : 'Declined'}`, entityType: 'Booking', entityId: booking._id, oldStatus: 'Counter-Proposed', newStatus: booking.status, description: `${accept ? 'Accepted' : 'Declined'} counter proposal for booking on ${new Date(booking.date).toDateString()}` });
 
     res.json(booking);
   } catch (err) { next(err); }

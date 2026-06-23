@@ -2,6 +2,7 @@ const Invoice = require('../models/Invoice');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
+const { log } = require('../services/activityLogger');
 
 const getInvoices = async (req, res, next) => {
   try {
@@ -40,6 +41,8 @@ const createInvoice = async (req, res, next) => {
       type: 'invoice'
     });
 
+    log({ user: req.user._id, role: 'vendor', action: 'Invoice Submitted', entityType: 'Invoice', entityId: invoice._id, newStatus: 'Pending Review', description: `Submitted invoice of ${totalAmount} EGP for review`, metadata: { totalAmount } });
+
     res.status(201).json(invoice);
   } catch (err) { next(err); }
 };
@@ -67,6 +70,8 @@ const updateInvoiceStatus = async (req, res, next) => {
       const populated = await Invoice.findById(invoice._id).populate('event', 'name');
       emailService.invoiceStatusUpdate({ vendorEmail: vendor.email, vendorName: vendor.name, invoiceNumber: invoice.invoiceNumber, amount: invoice.totalAmount, status, eventName: populated?.event?.name || 'Event', message: invoice.itemizedBreakdown }).catch(() => {});
     }
+
+    log({ user: req.user._id, role: 'organizer', action: `Invoice ${status}`, entityType: 'Invoice', entityId: invoice._id, oldStatus: 'Pending Review', newStatus: status, description: `${status} invoice #${invoice.invoiceNumber} of ${invoice.totalAmount?.toLocaleString()} EGP`, metadata: { invoiceNumber: invoice.invoiceNumber, amount: invoice.totalAmount } });
 
     res.json(invoice);
   } catch (err) { next(err); }

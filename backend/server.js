@@ -37,6 +37,7 @@ app.use('/api/communications', require('./src/routes/communications'));
 app.use('/api/feedback', require('./src/routes/feedback'));
 app.use('/api/reports', require('./src/routes/reports'));
 app.use('/api/notifications', require('./src/routes/notifications'));
+app.use('/api/activity', require('./src/routes/activity'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'PopEyez API is running' }));
 

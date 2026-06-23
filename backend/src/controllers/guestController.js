@@ -1,6 +1,7 @@
 const Guest = require('../models/Guest');
 const Invitation = require('../models/Invitation');
 const Notification = require('../models/Notification');
+const { log } = require('../services/activityLogger');
 
 const getGuests = async (req, res, next) => {
   try {
@@ -63,10 +64,15 @@ const updateRSVP = async (req, res, next) => {
     if (allergies) guest.allergies = allergies;
     if (specialRequirements !== undefined) guest.specialRequirements = specialRequirements;
 
+    const prevRsvp = guest.rsvpStatus;
     await guest.save();
 
     const invitation = await Invitation.findOne({ guest: guest._id });
     if (invitation) { invitation.status = 'Responded'; await invitation.save(); }
+
+    if (rsvpStatus && req.user) {
+      log({ user: req.user._id, role: req.user.role, action: `RSVP ${rsvpStatus}`, entityType: 'Guest', entityId: guest._id, oldStatus: prevRsvp, newStatus: rsvpStatus, description: `RSVP updated for ${guest.guestName}: ${prevRsvp} → ${rsvpStatus}` });
+    }
 
     res.json(guest);
   } catch (err) { next(err); }
@@ -96,6 +102,8 @@ const checkInGuest = async (req, res, next) => {
       guest.rsvpStatus = 'Attending';
     }
     await guest.save();
+
+    log({ user: req.user._id, role: req.user.role, action: guest.checkInStatus ? 'Guest Checked In' : 'Check-In Undone', entityType: 'Guest', entityId: guest._id, oldStatus: guest.checkInStatus ? 'Not Checked In' : 'Checked In', newStatus: guest.checkInStatus ? 'Checked In' : 'Not Checked In', description: `${guest.checkInStatus ? 'Checked in' : 'Undid check-in for'} guest ${guest.guestName}` });
 
     res.json({ message: guest.checkInStatus ? 'Guest checked in' : 'Check-in undone', guest });
   } catch (err) { next(err); }

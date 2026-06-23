@@ -35,6 +35,7 @@ const roleMenus = {
     { section: 'Account', items: [
       { to: '/profile', icon: '👤', label: 'My Profile' },
       { to: '/notifications', icon: '🔔', label: 'Notifications' },
+      { to: '/history', icon: '🕑', label: 'Transaction History' },
     ]},
   ],
   staff: [
@@ -51,6 +52,7 @@ const roleMenus = {
     { section: 'Account', items: [
       { to: '/profile', icon: '👤', label: 'My Profile' },
       { to: '/notifications', icon: '🔔', label: 'Notifications' },
+      { to: '/history', icon: '🕑', label: 'Transaction History' },
     ]},
   ],
   vendor: [
@@ -69,6 +71,7 @@ const roleMenus = {
     ]},
     { section: 'Account', items: [
       { to: '/notifications', icon: '🔔', label: 'Notifications' },
+      { to: '/history', icon: '🕑', label: 'Transaction History' },
     ]},
   ],
   guest: [
@@ -81,6 +84,7 @@ const roleMenus = {
     ]},
     { section: 'Account', items: [
       { to: '/profile', icon: '👤', label: 'My Profile' },
+      { to: '/history', icon: '🕑', label: 'Transaction History' },
     ]},
   ],
   venueOwner: [
@@ -96,6 +100,7 @@ const roleMenus = {
     { section: 'Account', items: [
       { to: '/profile', icon: '👤', label: 'My Profile' },
       { to: '/notifications', icon: '🔔', label: 'Notifications' },
+      { to: '/history', icon: '🕑', label: 'Transaction History' },
     ]},
   ],
 };

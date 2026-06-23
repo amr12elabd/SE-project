@@ -13,6 +13,7 @@ import PublicRSVP from './pages/public/PublicRSVP';
 import Profile from './pages/shared/Profile';
 import Notifications from './pages/shared/Notifications';
 import NotFound from './pages/shared/NotFound';
+import TransactionHistory from './pages/shared/TransactionHistory';
 
 // Organizer
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
@@ -88,6 +89,7 @@ const App = () => (
       <Route path="/dashboard" element={<DashboardSwitch />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/notifications" element={<Notifications />} />
+      <Route path="/history" element={<TransactionHistory />} />
 
       {/* Organizer */}
       <Route path="/events" element={<ProtectedRoute roles={['organizer']}><EventsList /></ProtectedRoute>} />

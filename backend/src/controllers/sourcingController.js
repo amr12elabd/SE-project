@@ -1,6 +1,7 @@
 const SourcingRequest = require('../models/SourcingRequest');
 const Notification = require('../models/Notification');
 const { notifyUser } = require('../socket');
+const { log } = require('../services/activityLogger');
 
 const getSourcingRequests = async (req, res, next) => {
   try {
@@ -37,6 +38,8 @@ const createSourcingRequest = async (req, res, next) => {
         user: vendor, title: 'New Sourcing Request', message: 'You have a new sourcing request to review', type: 'general'
       });
     }
+
+    log({ user: req.user._id, role: 'organizer', action: 'Sourcing Request Submitted', entityType: 'SourcingRequest', entityId: request._id, newStatus: 'Pending', description: `Submitted sourcing request with ${requestedItems?.length} item(s), delivery on ${new Date(deliveryDate).toDateString()}`, metadata: { totalEstimatedCost } });
 
     res.status(201).json(request);
   } catch (err) { next(err); }
@@ -75,6 +78,10 @@ const updateSourcingStatus = async (req, res, next) => {
         : `Your sourcing request status updated to: ${status}`;
       const notif = await Notification.create({ user: request.organizer, title, message, type: isDelay ? 'general' : 'general' });
       try { notifyUser(request.organizer, notif); } catch { /* socket may not be available */ }
+    }
+
+    if (statusChanged) {
+      log({ user: req.user._id, role: req.user.role, action: `Sourcing Request ${status}`, entityType: 'SourcingRequest', entityId: request._id, oldStatus: prevStatus, newStatus: status, description: `Updated sourcing request status from ${prevStatus} to ${status}${isDelay ? ` — delay: ${delayNote}` : ''}` });
     }
 
     res.json(request);
