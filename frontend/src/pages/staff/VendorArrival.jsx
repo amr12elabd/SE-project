@@ -38,8 +38,16 @@ const VendorArrival = () => {
     try {
       await sourcingAPI.updateStatus(id, { status: 'Delivered' });
       setRequests(prev => prev.map(r => r._id === id ? { ...r, status: 'Delivered' } : r));
-      toast('Vendor marked as arrived/delivered!', 'success');
+      toast('Vendor marked as arrived!', 'success');
     } catch (err) { toast(err.response?.data?.message || 'Failed to update', 'error'); }
+  };
+
+  const undoArrived = async (id) => {
+    try {
+      await sourcingAPI.updateStatus(id, { status: 'Out for Delivery' });
+      setRequests(prev => prev.map(r => r._id === id ? { ...r, status: 'Out for Delivery' } : r));
+      toast('Arrival undone — status reset to Out for Delivery', 'info');
+    } catch (err) { toast(err.response?.data?.message || 'Failed to undo', 'error'); }
   };
 
   const statusColor = { 'Pending': 'var(--text-muted)', 'Accepted': 'var(--info)', 'Preparing': 'var(--warning)', 'Out for Delivery': 'var(--secondary)', 'Delivered': 'var(--success)', 'Declined': 'var(--danger)' };
@@ -131,7 +139,12 @@ const VendorArrival = () => {
                       </button>
                     )}
                     {r.status === 'Delivered' && (
-                      <span className="badge badge-success">✓ Arrived</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        <span className="badge badge-success">✓ Arrived</span>
+                        <button className="btn btn-ghost btn-sm" style={{ fontSize: 11, color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => undoArrived(r._id)}>
+                          ↩ Undo
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
