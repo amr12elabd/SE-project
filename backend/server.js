@@ -43,4 +43,10 @@ app.get('/api/health', (req, res) => res.json({ status: 'PopEyez API is running'
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`PopEyez server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`PopEyez server running on port ${PORT}`);
+  // Run booking reminders on startup and then every hour
+  const { sendUpcomingBookingReminders } = require('./src/jobs/bookingReminders');
+  sendUpcomingBookingReminders();
+  setInterval(sendUpcomingBookingReminders, 60 * 60 * 1000);
+});
