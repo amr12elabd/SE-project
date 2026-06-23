@@ -142,15 +142,20 @@ const MainLayout = () => {
               style={{ display: 'none' }} id="mobile-menu-btn">☰</button>
             <span className="navbar-title">PopEyez Platform</span>
             <div className="navbar-actions">
-              <div className="notif-badge" onClick={() => navigate('/notifications')}>
+              <div className="notif-badge" onClick={() => navigate('/notifications')} title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'} style={{ position: 'relative' }}>
                 🔔
-                {unreadCount > 0 && <span className="notif-count">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                {unreadCount > 0 && (
+                  <span className="notif-count" style={{ animation: 'pulse 2s infinite' }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
               </div>
-              <div className="flex items-center gap-2" style={{ cursor: 'pointer' }} onClick={() => navigate('/profile')}>
-                <div className="avatar avatar-sm" style={{ background: 'var(--primary)' }}>
+              <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/profile')}>
+                <div className="avatar avatar-sm" style={{ background: 'var(--primary)', border: '2px solid var(--primary-light)' }}>
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm font-medium" style={{ display: 'none' }}>{user?.name}</span>
+                <div style={{ lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user?.role === 'venueOwner' ? 'Venue Owner' : user?.role}</div>
+                </div>
               </div>
             </div>
           </header>
