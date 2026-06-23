@@ -73,6 +73,16 @@ const Profile = () => {
               </button>
             ))}
           </div>
+
+          {/* Restart Tour */}
+          <div className="card card-body" style={{ marginTop: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>🧭</div>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>New to PopEyez?</div>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px' }}>Restart the guided tour for your role anytime.</p>
+            <button className="btn btn-outline btn-sm" onClick={() => { localStorage.removeItem(`popeyez_tour_${user?.role}`); window.location.href = '/dashboard'; }}>
+              🔄 Restart Tour
+            </button>
+          </div>
         </div>
 
         {/* Right Column */}
