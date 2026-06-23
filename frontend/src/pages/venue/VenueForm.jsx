@@ -4,6 +4,80 @@ import { venuesAPI } from '../../api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
+const AvailabilityCalendar = ({ venueId }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [unavailable, setUnavailable] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (!venueId) return;
+    venuesAPI.getById(venueId).then(r => setUnavailable((r.data.unavailableDates || []).map(d => new Date(d).toISOString().slice(0, 10)))).catch(() => {});
+  }, [venueId]);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const toggleDate = async (dateStr) => {
+    if (dateStr < today) return;
+    setLoading(true);
+    try {
+      if (unavailable.includes(dateStr)) {
+        await venuesAPI.removeUnavailable(venueId, dateStr);
+        setUnavailable(prev => prev.filter(d => d !== dateStr));
+        toast('Date marked as available', 'success');
+      } else {
+        await venuesAPI.markUnavailable(venueId, dateStr);
+        setUnavailable(prev => [...prev, dateStr]);
+        toast('Date marked as unavailable', 'info');
+      }
+    } catch { toast('Failed to update availability', 'error'); }
+    finally { setLoading(false); }
+  };
+
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div className="card card-body mb-4">
+      <h3 className="mb-2">Availability Calendar</h3>
+      <p className="text-muted text-sm mb-4">Click a date to mark it as unavailable (red) or available (white). Past dates cannot be changed.</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <button className="btn btn-ghost btn-sm" onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>← Prev</button>
+        <strong>{currentDate.toLocaleString('en', { month: 'long', year: 'numeric' })}</strong>
+        <button className="btn btn-ghost btn-sm" onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>Next →</button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 8 }}>
+        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', padding: '4px 0' }}>{d}</div>)}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+        {cells.map((day, i) => {
+          if (!day) return <div key={i} />;
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const isUnavailable = unavailable.includes(dateStr);
+          const isPast = dateStr < today;
+          const isToday = dateStr === today;
+          return (
+            <button key={i} type="button" disabled={isPast || loading}
+              onClick={() => toggleDate(dateStr)}
+              style={{ padding: '8px 4px', borderRadius: 6, border: isToday ? '2px solid var(--primary)' : '1px solid var(--border)', background: isUnavailable ? '#fee2e2' : isPast ? 'var(--bg)' : '#fff', color: isUnavailable ? '#991b1b' : isPast ? 'var(--text-muted)' : 'var(--text)', cursor: isPast ? 'default' : 'pointer', fontSize: 13, fontWeight: isUnavailable ? 700 : 400 }}>
+              {day}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 3 }} /> Unavailable</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, background: '#fff', border: '1px solid var(--border)', borderRadius: 3 }} /> Available</div>
+      </div>
+    </div>
+  );
+};
+
 const AMENITIES = ['WiFi', 'Parking', 'Air Conditioning', 'Audio System', 'Projector', 'Stage', 'Kitchen', 'Outdoor Space', 'Catering Included', 'Security', 'Disabled Access', 'Prayer Room'];
 const CAIRO_AREAS = ['Maadi', 'Zamalek', 'Heliopolis', 'Nasr City', 'New Cairo', 'October City', 'Downtown', 'Dokki', 'Mohandessin', 'Sheikh Zayed', 'Ain Sokhna'];
 
@@ -145,6 +219,8 @@ const VenueForm = () => {
           </div>
           {form.amenities.length > 0 && <div className="text-sm text-muted mt-2">{form.amenities.length} amenities selected</div>}
         </div>
+
+        {isEdit && <AvailabilityCalendar venueId={id} />}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
           <button type="button" className="btn btn-ghost" onClick={() => navigate('/venue/listings')}>Cancel</button>
