@@ -43,6 +43,9 @@ const OrganizerDashboard = () => {
 
   const today = new Date().toDateString();
   const todayEvents = events.filter(e => new Date(e.date).toDateString() === today);
+  const next7Days = events.filter(e => { const d = new Date(e.date); const now = new Date(); return d >= now && d <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); }).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const urgentTasks = tasks.filter(t => t.status !== 'Done' && t.dueDate && new Date(t.dueDate) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000));
+  const completionRate = tasks.length > 0 ? Math.round((tasks.filter(t => t.status === 'Done').length / tasks.length) * 100) : 0;
 
   return (
     <div>
@@ -62,13 +65,47 @@ const OrganizerDashboard = () => {
         </div>
       )}
 
+      {/* Urgent Tasks Alert */}
+      {urgentTasks.length > 0 && (
+        <div className="alert alert-warning mb-4" style={{ cursor: 'pointer' }} onClick={() => navigate('/tasks')}>
+          🚨 <strong>{urgentTasks.length} urgent task{urgentTasks.length > 1 ? 's' : ''}</strong> due within 3 days — click to view and assign them.
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid-4 mb-6">
         <DashboardCard icon="📅" label="Total Events" value={events.length} color="#1a6b5c" sub={`${upcomingEvents.length} upcoming`} />
-        <DashboardCard icon="✅" label="Total Tasks" value={tasks.length} color="#3182ce" sub={`${tasks.filter(t => t.status === 'Done').length} completed`} />
-        <DashboardCard icon="⚡" label="In Progress" value={tasks.filter(t => t.status === 'In Progress').length} color="#dd6b20" />
+        <DashboardCard icon="✅" label="Task Completion" value={`${completionRate}%`} color="#3182ce" sub={`${tasks.filter(t => t.status === 'Done').length} of ${tasks.length} done`} />
+        <DashboardCard icon="⚡" label="Urgent Tasks" value={urgentTasks.length} color={urgentTasks.length > 0 ? '#dd6b20' : '#38a169'} sub="due in 3 days" />
         <DashboardCard icon="🔔" label="Unread Notifications" value={notifications.filter(n => !n.isRead).length} color="#7c3aed" />
       </div>
+
+      {/* Next 7 Days Timeline */}
+      {next7Days.length > 0 && (
+        <div className="card card-body mb-6">
+          <h3 style={{ marginBottom: 14 }}>📆 Next 7 Days</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {next7Days.map(ev => {
+              const daysUntil = Math.ceil((new Date(ev.date) - new Date()) / (1000 * 60 * 60 * 24));
+              return (
+                <div key={ev._id} onClick={() => navigate(`/events/${ev._id}`)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', background: 'var(--bg)', borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border)' }}>
+                  <div style={{ textAlign: 'center', background: 'var(--primary)', color: '#fff', borderRadius: 8, padding: '6px 12px', minWidth: 48 }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1 }}>{new Date(ev.date).getDate()}</div>
+                    <div style={{ fontSize: 10 }}>{new Date(ev.date).toLocaleString('en', { month: 'short' })}</div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{ev.name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{ev.startTime} · {ev.venue?.name || 'Venue TBD'}</div>
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: daysUntil <= 1 ? 'var(--danger)' : daysUntil <= 3 ? 'var(--warning)' : 'var(--primary)' }}>
+                    {daysUntil === 0 ? 'TODAY' : daysUntil === 1 ? 'TOMORROW' : `${daysUntil} days`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
         {/* Upcoming Events */}
