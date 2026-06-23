@@ -4,6 +4,7 @@ import { invitationsAPI, feedbackAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import OnboardingTour from '../../components/OnboardingTour';
 
 const GuestDashboard = () => {
   const { user } = useAuth();
@@ -29,6 +30,7 @@ const GuestDashboard = () => {
 
   return (
     <div>
+      <OnboardingTour role="guest" />
       <div className="page-header">
         <div>
           <h1>Welcome, {user?.name?.split(' ')[0]}! 🎉</h1>

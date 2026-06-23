@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import OnboardingTour from '../../components/OnboardingTour';
 
 const VenueOwnerDashboard = () => {
   const { user } = useAuth();
@@ -34,6 +35,7 @@ const VenueOwnerDashboard = () => {
 
   return (
     <div>
+      <OnboardingTour role="venueOwner" />
       <div className="page-header">
         <div>
           <h1>Welcome, {user?.name?.split(' ')[0]}! 🏛️</h1>

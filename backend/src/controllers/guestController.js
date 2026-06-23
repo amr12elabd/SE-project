@@ -109,4 +109,30 @@ const getGuestByQR = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getGuests, createGuest, updateGuest, deleteGuest, updateRSVP, checkInGuest, getGuestByQR };
+const getGuestByQRPublic = async (req, res, next) => {
+  try {
+    const guest = await Guest.findOne({ qrCodeValue: req.params.qrCode })
+      .populate('event', 'name date startTime endTime venue description dressCode')
+      .populate({ path: 'event', populate: { path: 'venue', select: 'name location' } });
+    if (!guest) return res.status(404).json({ message: 'Invitation not found' });
+    res.json({ guest });
+  } catch (err) { next(err); }
+};
+
+const publicUpdateRSVP = async (req, res, next) => {
+  try {
+    const { rsvpStatus } = req.body;
+    const valid = ['Attending', 'Not Attending', 'Maybe'];
+    if (!valid.includes(rsvpStatus)) return res.status(400).json({ message: 'Invalid RSVP status' });
+
+    const guest = await Guest.findOneAndUpdate(
+      { qrCodeValue: req.params.qrCode },
+      { rsvpStatus },
+      { new: true }
+    ).populate('event', 'name date');
+    if (!guest) return res.status(404).json({ message: 'Invitation not found' });
+    res.json({ guest, message: 'RSVP updated successfully' });
+  } catch (err) { next(err); }
+};
+
+module.exports = { getGuests, createGuest, updateGuest, deleteGuest, updateRSVP, checkInGuest, getGuestByQR, getGuestByQRPublic, publicUpdateRSVP };

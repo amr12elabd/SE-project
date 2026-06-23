@@ -2,6 +2,8 @@ const Task = require('../models/Task');
 const Event = require('../models/Event');
 const Notification = require('../models/Notification');
 const { notifyUser } = require('../socket');
+const User = require('../models/User');
+const emailService = require('../services/emailService');
 
 const getTasks = async (req, res, next) => {
   try {
@@ -41,6 +43,13 @@ const createTask = async (req, res, next) => {
         type: 'task'
       });
       notifyUser(assignedTo, notif);
+
+      // Send email to assigned staff
+      const staffUser = await User.findById(assignedTo);
+      const eventDoc = await Event.findById(event);
+      if (staffUser?.email) {
+        emailService.taskAssigned({ staffEmail: staffUser.email, staffName: staffUser.name, taskTitle: title, taskDescription: description, eventName: eventDoc?.name || 'Event', dueDate, priority }).catch(() => {});
+      }
     }
 
     const populated = await Task.findById(task._id)

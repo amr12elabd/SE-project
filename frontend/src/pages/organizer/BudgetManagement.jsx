@@ -93,6 +93,8 @@ const BudgetManagement = () => {
   };
 
   const isOverBudget = budget.totalActual > budget.totalBudget && budget.totalBudget > 0;
+  const budgetPct = budget.totalBudget > 0 ? Math.min(110, Math.round((budget.totalActual / budget.totalBudget) * 100)) : 0;
+  const isNearBudget = !isOverBudget && budgetPct >= 80 && budget.totalBudget > 0;
   const chartData = budget.items.map(i => ({ name: i.category, Planned: i.plannedAmount, Actual: i.actualAmount }));
 
   if (loading) return <LoadingSpinner fullPage />;
@@ -114,7 +116,26 @@ const BudgetManagement = () => {
       ) : (
         <>
           {isOverBudget && (
-            <div className="alert alert-danger mb-4">⚠️ <strong>Budget Alert:</strong> Actual spending ({budget.totalActual?.toLocaleString()} EGP) exceeds total budget ({budget.totalBudget?.toLocaleString()} EGP) by {(budget.totalActual - budget.totalBudget)?.toLocaleString()} EGP!</div>
+            <div className="alert alert-danger mb-3">🚨 <strong>Over Budget!</strong> Actual spending ({budget.totalActual?.toLocaleString()} EGP) exceeds the total budget ({budget.totalBudget?.toLocaleString()} EGP) by <strong>{(budget.totalActual - budget.totalBudget)?.toLocaleString()} EGP</strong>. Review your expenses immediately.</div>
+          )}
+          {isNearBudget && (
+            <div className="alert alert-warning mb-3">⚠️ <strong>Budget Warning ({budgetPct}% used):</strong> You are approaching your budget limit. Only <strong>{(budget.totalBudget - budget.totalActual)?.toLocaleString()} EGP</strong> remaining of your {budget.totalBudget?.toLocaleString()} EGP budget.</div>
+          )}
+          {budget.totalBudget > 0 && (
+            <div className="card card-body mb-4" style={{ padding: '14px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
+                <span style={{ fontWeight: 600 }}>Budget Utilization</span>
+                <span style={{ fontWeight: 700, color: isOverBudget ? 'var(--danger)' : isNearBudget ? 'var(--warning)' : 'var(--success)' }}>{budgetPct}% used — {budget.totalActual?.toLocaleString()} / {budget.totalBudget?.toLocaleString()} EGP</span>
+              </div>
+              <div style={{ height: 12, background: 'var(--bg)', borderRadius: 6, overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min(100, budgetPct)}%`, height: '100%', background: isOverBudget ? 'var(--danger)' : isNearBudget ? 'var(--warning)' : 'var(--success)', borderRadius: 6, transition: 'width 0.6s ease' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                <span>0 EGP</span>
+                <span style={{ color: 'var(--warning)', fontWeight: 600 }}>80% — {(budget.totalBudget * 0.8)?.toLocaleString()} EGP</span>
+                <span>{budget.totalBudget?.toLocaleString()} EGP</span>
+              </div>
+            </div>
           )}
 
           {/* Budget Summary */}

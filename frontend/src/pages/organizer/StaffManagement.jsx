@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usersAPI, tasksAPI } from '../../api';
 import Modal from '../../components/Modal';
+import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import StatusBadge from '../../components/StatusBadge';
 import { useToast } from '../../components/Toast';
@@ -11,6 +12,7 @@ const StaffManagement = () => {
   const [search, setSearch] = useState('');
   const [createModal, setCreateModal] = useState(false);
   const [viewModal, setViewModal] = useState(null);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(null);
   const [staffTasks, setStaffTasks] = useState([]);
   const [form, setForm] = useState({ name: '', email: '', password: 'password123', phone: '', bio: '' });
   const [saving, setSaving] = useState(false);
@@ -41,12 +43,13 @@ const StaffManagement = () => {
     finally { setSaving(false); }
   };
 
-  const handleDeactivate = async (id, name) => {
-    if (!confirm(`Deactivate ${name}?`)) return;
+  const handleDeactivate = async () => {
+    if (!confirmDeactivate) return;
     try {
-      await usersAPI.deactivate(id);
-      setStaff(prev => prev.map(s => s._id === id ? { ...s, isActive: false } : s));
+      await usersAPI.deactivate(confirmDeactivate._id);
+      setStaff(prev => prev.map(s => s._id === confirmDeactivate._id ? { ...s, isActive: false } : s));
       toast('Staff member deactivated', 'success');
+      setConfirmDeactivate(null);
     } catch { toast('Failed to deactivate', 'error'); }
   };
 
@@ -64,6 +67,8 @@ const StaffManagement = () => {
 
   return (
     <div>
+      <ConfirmModal isOpen={Boolean(confirmDeactivate)} onClose={() => setConfirmDeactivate(null)} onConfirm={handleDeactivate}
+        title="Deactivate Staff Member" message={`Deactivate ${confirmDeactivate?.name}? They will no longer be able to log in or receive task assignments.`} confirmLabel="Deactivate" />
       <div className="page-header">
         <h1>Staff Management</h1>
         <button className="btn btn-primary" onClick={() => setCreateModal(true)}>+ Add Staff Member</button>
@@ -89,7 +94,7 @@ const StaffManagement = () => {
             {s.bio && <p className="text-sm text-muted mb-3">{s.bio}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-outline btn-sm" onClick={() => viewStaffTasks(s)}>View Tasks</button>
-              {s.isActive && <button className="btn btn-danger btn-sm" onClick={() => handleDeactivate(s._id, s.name)}>Deactivate</button>}
+              {s.isActive && <button className="btn btn-danger btn-sm" onClick={() => setConfirmDeactivate(s)}>Deactivate</button>}
             </div>
           </div>
         ))}

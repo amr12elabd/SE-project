@@ -2,6 +2,8 @@ const BookingRequest = require('../models/BookingRequest');
 const Venue = require('../models/Venue');
 const Notification = require('../models/Notification');
 const { notifyUser } = require('../socket');
+const emailService = require('../services/emailService');
+const User = require('../models/User');
 
 const getBookings = async (req, res, next) => {
   try {
@@ -85,6 +87,12 @@ const updateBookingStatus = async (req, res, next) => {
       type: 'booking'
     });
     notifyUser(booking.organizer, notif2);
+
+    // Send email to organizer
+    const organizer = await User.findById(booking.organizer);
+    if (organizer?.email) {
+      emailService.bookingStatusUpdate({ organizerEmail: organizer.email, organizerName: organizer.name, venueName: booking.venue?.name, eventName: '', date: booking.date, status: booking.status, ownerMessage: booking.ownerMessage, counterProposal: booking.counterProposal }).catch(() => {});
+    }
 
     res.json(booking);
   } catch (err) { next(err); }

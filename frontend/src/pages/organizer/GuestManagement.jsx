@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { guestsAPI, eventsAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
+import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -15,6 +16,7 @@ const GuestManagement = () => {
   const [filters, setFilters] = useState({ event: '', rsvpStatus: '', search: '' });
   const [modal, setModal] = useState(false);
   const [editGuest, setEditGuest] = useState(null);
+  const [confirmRemove, setConfirmRemove] = useState(null);
   const [form, setForm] = useState({ guestName: '', email: '', phone: '', event: '', group: 'General', dietaryPreferences: [], allergies: [], specialRequirements: '' });
   const [saving, setSaving] = useState(false);
   const [qrGuest, setQrGuest] = useState(null);
@@ -76,12 +78,13 @@ const GuestManagement = () => {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Remove this guest?')) return;
+  const handleDelete = async () => {
+    if (!confirmRemove) return;
     try {
-      await guestsAPI.delete(id);
-      setGuests(prev => prev.filter(g => g._id !== id));
+      await guestsAPI.delete(confirmRemove._id);
+      setGuests(prev => prev.filter(g => g._id !== confirmRemove._id));
       toast('Guest removed', 'success');
+      setConfirmRemove(null);
     } catch { toast('Failed to remove guest', 'error'); }
   };
 
@@ -93,6 +96,8 @@ const GuestManagement = () => {
 
   return (
     <div>
+      <ConfirmModal isOpen={Boolean(confirmRemove)} onClose={() => setConfirmRemove(null)} onConfirm={handleDelete}
+        title="Remove Guest" message={`Remove ${confirmRemove?.guestName} from this event? Their invitation and RSVP will be deleted.`} confirmLabel="Remove Guest" />
       <div className="page-header">
         <div>
           <h1>Guest Management</h1>
@@ -147,7 +152,7 @@ const GuestManagement = () => {
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-ghost btn-sm" onClick={() => openModal(g)}>Edit</button>
                         <button className="btn btn-outline btn-sm" onClick={() => setQrGuest(g)} title="Show QR Code">QR</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(g._id)}>Del</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmRemove(g)}>Del</button>
                       </div>
                     </td>
                   </tr>

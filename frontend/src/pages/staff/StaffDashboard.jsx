@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import OnboardingTour from '../../components/OnboardingTour';
 import { useToast } from '../../components/Toast';
 
 const EVENT_STATUSES = ['Planning', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
@@ -47,6 +48,7 @@ const StaffDashboard = () => {
 
   return (
     <div>
+      <OnboardingTour role="staff" />
       <div className="page-header">
         <div>
           <h1>Welcome, {user?.name?.split(' ')[0]}! 👷</h1>

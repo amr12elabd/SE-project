@@ -1,4 +1,5 @@
 const VendorProfile = require('../models/VendorProfile');
+const VendorRating = require('../models/VendorRating');
 const User = require('../models/User');
 
 const getVendors = async (req, res, next) => {
@@ -60,4 +61,35 @@ const updateVendorProfile = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getVendors, getVendorProfile, getVendorProfileById, createVendorProfile, updateVendorProfile };
+const submitRating = async (req, res, next) => {
+  try {
+    const { vendorId, eventId, rating, review, categories } = req.body;
+    if (!vendorId || !rating) return res.status(400).json({ message: 'Vendor ID and rating are required' });
+
+    const existing = await VendorRating.findOneAndUpdate(
+      { vendor: vendorId, organizer: req.user._id, event: eventId },
+      { rating, review, categories },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    // Recalculate vendor average rating
+    const ratings = await VendorRating.find({ vendor: vendorId });
+    const avg = ratings.reduce((s, r) => s + r.rating, 0) / ratings.length;
+    await VendorProfile.findOneAndUpdate({ user: vendorId }, { rating: Math.round(avg * 10) / 10, reviewCount: ratings.length });
+
+    res.json(existing);
+  } catch (err) { next(err); }
+};
+
+const getVendorRatings = async (req, res, next) => {
+  try {
+    const { vendorId } = req.params;
+    const ratings = await VendorRating.find({ vendor: vendorId })
+      .populate('organizer', 'name')
+      .populate('event', 'name')
+      .sort('-createdAt');
+    res.json(ratings);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getVendors, getVendorProfile, getVendorProfileById, createVendorProfile, updateVendorProfile, submitRating, getVendorRatings };

@@ -126,4 +126,43 @@ const updateEventStatus = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getEvents, createEvent, getEvent, updateEvent, deleteEvent, getEventDashboard, updateEventStatus };
+const duplicateEvent = async (req, res, next) => {
+  try {
+    const source = await Event.findById(req.params.id);
+    if (!source) return res.status(404).json({ message: 'Event not found' });
+    if (source.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const duplicate = await Event.create({
+      name: `${source.name} (Copy)`,
+      description: source.description,
+      organizer: req.user._id,
+      date: new Date(source.date.getTime() + 7 * 24 * 60 * 60 * 1000), // +1 week
+      startTime: source.startTime,
+      endTime: source.endTime,
+      eventType: source.eventType,
+      expectedGuests: source.expectedGuests,
+      dressCode: source.dressCode,
+      agenda: source.agenda,
+      totalBudget: source.totalBudget,
+      status: 'Planning',
+    });
+
+    // Duplicate tasks (without assignments)
+    const tasks = await Task.find({ event: source._id });
+    for (const t of tasks) {
+      await Task.create({ event: duplicate._id, title: t.title, description: t.description, speciality: t.speciality, dueDate: t.dueDate, priority: t.priority, status: 'Not Assigned' });
+    }
+
+    // Duplicate budget items
+    const budgetItems = await BudgetItem.find({ event: source._id });
+    for (const b of budgetItems) {
+      await BudgetItem.create({ event: duplicate._id, category: b.category, description: b.description, plannedAmount: b.plannedAmount, actualAmount: 0, notes: b.notes });
+    }
+
+    res.status(201).json(duplicate);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getEvents, createEvent, getEvent, updateEvent, deleteEvent, getEventDashboard, updateEventStatus, duplicateEvent };

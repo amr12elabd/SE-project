@@ -1,5 +1,7 @@
 const Invoice = require('../models/Invoice');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
+const emailService = require('../services/emailService');
 
 const getInvoices = async (req, res, next) => {
   try {
@@ -58,6 +60,13 @@ const updateInvoiceStatus = async (req, res, next) => {
       message: `Your invoice #${invoice.invoiceNumber} has been ${status.toLowerCase()}`,
       type: 'invoice'
     });
+
+    // Send email to vendor
+    const vendor = await User.findById(invoice.vendor);
+    if (vendor?.email) {
+      const populated = await Invoice.findById(invoice._id).populate('event', 'name');
+      emailService.invoiceStatusUpdate({ vendorEmail: vendor.email, vendorName: vendor.name, invoiceNumber: invoice.invoiceNumber, amount: invoice.totalAmount, status, eventName: populated?.event?.name || 'Event', message: invoice.itemizedBreakdown }).catch(() => {});
+    }
 
     res.json(invoice);
   } catch (err) { next(err); }

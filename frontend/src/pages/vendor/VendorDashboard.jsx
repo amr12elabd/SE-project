@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { sourcingAPI, invoicesAPI, vendorsAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import DashboardCard from '../../components/DashboardCard';
+import OnboardingTour from '../../components/OnboardingTour';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -48,6 +49,7 @@ const VendorDashboard = () => {
 
   return (
     <div>
+      <OnboardingTour role="vendor" />
       <div className="page-header">
         <div>
           <h1>Welcome, {user?.name?.split(' ')[0]}! 🏪</h1>

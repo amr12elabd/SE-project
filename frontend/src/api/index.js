@@ -27,6 +27,7 @@ export const eventsAPI = {
   delete: (id) => api.delete(`/events/${id}`),
   getDashboard: (id) => api.get(`/events/${id}/dashboard`),
   updateStatus: (id, status) => api.patch(`/events/${id}/status`, { status }),
+  duplicate: (id) => api.post(`/events/${id}/duplicate`),
 };
 
 // Venues
@@ -84,6 +85,9 @@ export const vendorsAPI = {
   createProfile: (data) => api.post('/vendors/profile', data),
   updateProfile: (data) => api.put('/vendors/profile', data),
   upsertProfile: (data) => api.put('/vendors/profile', data),
+  submitRating: (data) => api.post('/vendors/ratings', data),
+  getRatings: (vendorId) => api.get(`/vendors/${vendorId}/ratings`),
+  duplicate: (id) => api.post(`/events/${id}/duplicate`),
 };
 
 // Sourcing

@@ -7,6 +7,7 @@ import MainLayout from './layouts/MainLayout';
 import Landing from './pages/public/Landing';
 import Login from './pages/public/Login';
 import Register from './pages/public/Register';
+import PublicRSVP from './pages/public/PublicRSVP';
 
 // Shared
 import Profile from './pages/shared/Profile';
@@ -78,6 +79,7 @@ const App = () => (
     <Route path="/" element={<Landing />} />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
+    <Route path="/rsvp/:qrCode" element={<PublicRSVP />} />
 
     {/* Protected - all roles */}
     <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>

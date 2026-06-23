@@ -1,6 +1,10 @@
 const router = require('express').Router();
-const { getGuests, createGuest, updateGuest, deleteGuest, updateRSVP, checkInGuest, getGuestByQR } = require('../controllers/guestController');
+const { getGuests, createGuest, updateGuest, deleteGuest, updateRSVP, checkInGuest, getGuestByQR, getGuestByQRPublic, publicUpdateRSVP } = require('../controllers/guestController');
 const { protect, authorize } = require('../middleware/auth');
+
+// Public routes (no auth)
+router.get('/public/:qrCode', getGuestByQRPublic);
+router.patch('/public/:qrCode/rsvp', publicUpdateRSVP);
 
 router.use(protect);
 router.get('/', getGuests);

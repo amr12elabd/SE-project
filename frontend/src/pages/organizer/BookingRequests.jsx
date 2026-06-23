@@ -73,6 +73,8 @@ const BookingRequests = () => {
             <p>Go to Venue Search to submit a booking request.</p>
           </div>
         </div>
+      ) : bookings.length === 0 ? (
+        <div className="card"><div className="empty-state"><div className="empty-state-icon">🏛️</div><h3>{filter ? `No ${filter} bookings` : 'No booking requests yet'}</h3><p>{filter ? 'Try selecting a different status filter.' : 'Submit a booking request from the Venue Search page to get started.'}</p>{!filter && <a href="/venues" className="btn btn-primary mt-4">Browse Venues</a>}</div></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {bookings.map(b => (

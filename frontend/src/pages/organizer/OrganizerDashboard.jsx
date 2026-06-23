@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import OnboardingTour from '../../components/OnboardingTour';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const OrganizerDashboard = () => {
@@ -45,6 +46,7 @@ const OrganizerDashboard = () => {
 
   return (
     <div>
+      <OnboardingTour role="organizer" />
       <div className="page-header">
         <div>
           <h1>Welcome back, {user?.name?.split(' ')[0]}! 👋</h1>

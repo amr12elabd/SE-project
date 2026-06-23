@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { tasksAPI, eventsAPI, usersAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
+import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
@@ -13,6 +14,8 @@ const Tasks = () => {
   const [filters, setFilters] = useState({ status: '', event: '', priority: '' });
   const [modal, setModal] = useState(false);
   const [editTask, setEditTask] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [search, setSearch] = useState('');
   const [form, setForm] = useState({ event: '', title: '', description: '', assignedTo: '', speciality: '', dueDate: '', priority: 'Medium', status: 'Not Assigned' });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
@@ -69,27 +72,32 @@ const Tasks = () => {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this task?')) return;
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
     try {
-      await tasksAPI.delete(id);
-      setTasks(prev => prev.filter(t => t._id !== id));
+      await tasksAPI.delete(confirmDelete._id);
+      setTasks(prev => prev.filter(t => t._id !== confirmDelete._id));
       toast('Task deleted', 'success');
+      setConfirmDelete(null);
     } catch { toast('Failed to delete', 'error'); }
   };
 
   if (loading) return <LoadingSpinner fullPage />;
 
   const priorityColor = { Low: 'var(--success)', Medium: 'var(--warning)', High: 'var(--danger)' };
+  const filteredTasks = tasks.filter(t => !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase()) || t.speciality?.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div>
+      <ConfirmModal isOpen={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} onConfirm={handleDelete}
+        title="Delete Task" message={`Delete "${confirmDelete?.title}"? This cannot be undone.`} confirmLabel="Delete Task" />
       <div className="page-header">
         <h1>Tasks & Workflow</h1>
         <button className="btn btn-primary" onClick={() => openModal()}>+ New Task</button>
       </div>
 
       <div className="filter-bar">
+        <input type="search" className="form-control" placeholder="Search tasks..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
         <select className="form-control" value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
           <option value="">All Statuses</option>
           {['Not Assigned', 'Pending', 'In Progress', 'Done'].map(s => <option key={s}>{s}</option>)}
@@ -105,8 +113,8 @@ const Tasks = () => {
         <span className="text-muted text-sm">{tasks.length} tasks</span>
       </div>
 
-      {tasks.length === 0 ? (
-        <div className="card"><div className="empty-state"><div className="empty-state-icon">✅</div><h3>No tasks found</h3><p>Create tasks and assign them to staff members.</p></div></div>
+      {filteredTasks.length === 0 ? (
+        <div className="card"><div className="empty-state"><div className="empty-state-icon">✅</div><h3>{search ? 'No tasks match your search' : 'No tasks found'}</h3><p>{search ? 'Try a different search term.' : 'Create your first task and assign it to a staff member.'}</p>{!search && <button className="btn btn-primary mt-4" onClick={() => openModal()}>+ Create First Task</button>}</div></div>
       ) : (
         <div className="card">
           <div className="table-wrap">
@@ -117,7 +125,7 @@ const Tasks = () => {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map(t => (
+                {filteredTasks.map(t => (
                   <tr key={t._id}>
                     <td>
                       <div style={{ fontWeight: 500 }}>{t.title}</div>
@@ -139,7 +147,7 @@ const Tasks = () => {
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-ghost btn-sm" onClick={() => openModal(t)}>Edit</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t._id)}>Del</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(t)}>Del</button>
                       </div>
                     </td>
                   </tr>
