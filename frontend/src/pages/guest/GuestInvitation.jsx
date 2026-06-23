@@ -14,6 +14,7 @@ const GuestInvitation = () => {
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState(null);
+  const [confirmed, setConfirmed] = useState(null); // { status, eventName, qrCode }
   const toast = useToast();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ const GuestInvitation = () => {
     fetch();
   }, []);
 
-  const handleRSVP = async (guestId, invitationId, rsvpStatus) => {
+  const handleRSVP = async (guestId, invitationId, rsvpStatus, eventName, qrCode) => {
     setResponding(guestId);
     try {
       await guestsAPI.updateRSVP(guestId, { rsvpStatus });
@@ -35,12 +36,49 @@ const GuestInvitation = () => {
         ? { ...inv, guest: { ...inv.guest, rsvpStatus }, status: 'Responded' }
         : inv
       ));
-      toast(`RSVP updated: ${rsvpStatus}`, 'success');
+      if (rsvpStatus === 'Attending') {
+        setConfirmed({ status: rsvpStatus, eventName, qrCode });
+      } else {
+        toast(`RSVP updated: ${rsvpStatus}`, rsvpStatus === 'Not Attending' ? 'info' : 'success');
+      }
     } catch (err) { toast(err.response?.data?.message || 'RSVP failed', 'error'); }
     finally { setResponding(null); }
   };
 
   if (loading) return <LoadingSpinner fullPage />;
+
+  if (confirmed) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 24 }}>
+      <div style={{ background: '#fff', borderRadius: 20, maxWidth: 460, width: '100%', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1a6b5c, #2d9b87)', padding: '32px 32px 24px', color: '#fff' }}>
+          <div style={{ fontSize: 56, marginBottom: 8 }}>🎉</div>
+          <h2 style={{ margin: 0, fontWeight: 800 }}>You're Confirmed!</h2>
+          <p style={{ margin: '8px 0 0', opacity: 0.85 }}>Your attendance has been recorded</p>
+        </div>
+        <div style={{ padding: 32 }}>
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Event</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#1a6b5c' }}>{confirmed.eventName}</div>
+          </div>
+          {confirmed.qrCode && (
+            <div style={{ background: 'var(--bg)', borderRadius: 12, padding: 16, marginBottom: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Your Check-In QR Code</div>
+              <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16, color: 'var(--primary)', background: '#fff', padding: '10px 16px', borderRadius: 8, border: '2px dashed var(--primary)', display: 'inline-block' }}>
+                {confirmed.qrCode}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>Show this or your QR code page at the event entrance</div>
+            </div>
+          )}
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, margin: '0 0 20px' }}>
+            A confirmation has been noted. You can view your QR code anytime from <strong>My QR Code</strong> in the menu. See you at the event! ☕
+          </p>
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setConfirmed(null)}>
+            Back to My Invitations
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -94,7 +132,7 @@ const GuestInvitation = () => {
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                           {RSVP_OPTIONS.map(opt => (
                             <button key={opt.value} className="btn btn-outline" style={{ borderColor: opt.color, color: opt.color, minWidth: 140 }}
-                              onClick={() => handleRSVP(guest._id, inv._id, opt.value)}
+                              onClick={() => handleRSVP(guest._id, inv._id, opt.value, event?.name, guest?.qrCodeValue)}
                               disabled={responding === guest._id}>
                               {responding === guest._id ? '...' : opt.label}
                             </button>
@@ -102,13 +140,18 @@ const GuestInvitation = () => {
                         </div>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Your response:</span>
                         <StatusBadge status={guest?.rsvpStatus} />
+                        {guest?.rsvpStatus === 'Attending' && guest?.qrCodeValue && (
+                          <span style={{ fontSize: 12, color: 'var(--primary)', background: 'var(--primary-light)', padding: '2px 10px', borderRadius: 6 }}>
+                            🎟️ QR: {guest.qrCodeValue}
+                          </span>
+                        )}
                         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
                           {RSVP_OPTIONS.filter(o => o.value !== guest?.rsvpStatus).map(opt => (
                             <button key={opt.value} className="btn btn-ghost btn-sm" style={{ color: opt.color, borderColor: opt.color }}
-                              onClick={() => handleRSVP(guest._id, inv._id, opt.value)}>
+                              onClick={() => handleRSVP(guest._id, inv._id, opt.value, event?.name, guest?.qrCodeValue)}>
                               Change to {opt.label}
                             </button>
                           ))}
