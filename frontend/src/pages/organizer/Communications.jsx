@@ -15,6 +15,8 @@ const Communications = () => {
   const [message, setMessage] = useState('');
   const [followUpMsg, setFollowUpMsg] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendMode, setSendMode] = useState('all'); // 'all' | 'specific'
+  const [selectedGuests, setSelectedGuests] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -44,16 +46,23 @@ const Communications = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!message.trim()) { toast('Message is required', 'error'); return; }
+    if (sendMode === 'specific' && selectedGuests.length === 0) { toast('Please select at least one guest', 'error'); return; }
     setSending(true);
     try {
-      const res = await commsAPI.send(selectedEvent, { message });
+      const payload = { message };
+      if (sendMode === 'specific') payload.recipientIds = selectedGuests;
+      const res = await commsAPI.send(selectedEvent, payload);
       setComms(prev => [res.data, ...prev]);
-      toast('Message sent to all guests!', 'success');
+      toast(sendMode === 'specific' ? `Message sent to ${selectedGuests.length} guest(s)!` : 'Message sent to all guests!', 'success');
       setMessage('');
+      setSelectedGuests([]);
+      setSendMode('all');
       setModal(false);
     } catch (err) { toast(err.response?.data?.message || 'Failed to send', 'error'); }
     finally { setSending(false); }
   };
+
+  const toggleGuest = (id) => setSelectedGuests(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
 
   const handleFollowUp = async () => {
     if (!followUpMsg.trim()) { toast('Message required', 'error'); return; }
@@ -125,12 +134,53 @@ const Communications = () => {
         )}
       </div>
 
-      <Modal isOpen={modal} onClose={() => setModal(false)} title="Send Message to Guests"
-        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleSend} disabled={sending}>{sending ? 'Sending...' : `Send to All ${guests.length} Guests`}</button></>}>
-        <p className="text-muted mb-4">This message will be sent to all guests invited to the selected event.</p>
+      <Modal isOpen={modal} onClose={() => { setModal(false); setSendMode('all'); setSelectedGuests([]); setMessage(''); }} title="Send Message to Guests"
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={() => { setModal(false); setSendMode('all'); setSelectedGuests([]); setMessage(''); }}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleSend} disabled={sending}>
+              {sending ? 'Sending...' : sendMode === 'specific' ? `Send to ${selectedGuests.length} Guest${selectedGuests.length !== 1 ? 's' : ''}` : `Send to All ${guests.length} Guests`}
+            </button>
+          </>
+        }>
+
+        {/* Toggle */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <button type="button" className={`btn btn-sm ${sendMode === 'all' ? 'btn-primary' : 'btn-outline'}`} style={{ flex: 1 }} onClick={() => { setSendMode('all'); setSelectedGuests([]); }}>
+            📢 All Guests ({guests.length})
+          </button>
+          <button type="button" className={`btn btn-sm ${sendMode === 'specific' ? 'btn-primary' : 'btn-outline'}`} style={{ flex: 1 }} onClick={() => setSendMode('specific')}>
+            👤 Specific Guest(s)
+          </button>
+        </div>
+
+        {/* Guest selector (shown only in specific mode) */}
+        {sendMode === 'specific' && (
+          <div className="card card-body mb-4" style={{ padding: '12px 16px', maxHeight: 200, overflowY: 'auto' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>SELECT RECIPIENTS</div>
+            {guests.length === 0 ? (
+              <p className="text-muted text-sm">No guests found for this event.</p>
+            ) : guests.map(g => (
+              <label key={g._id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}>
+                <input type="checkbox" checked={selectedGuests.includes(g._id)} onChange={() => toggleGuest(g._id)} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500 }}>{g.guestName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{g.email} · {g.rsvpStatus} · {g.group}</div>
+                </div>
+              </label>
+            ))}
+            {guests.length > 0 && (
+              <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedGuests(guests.map(g => g._id))}>Select All</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedGuests([])}>Clear</button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="form-group">
           <label className="form-label">Message *</label>
-          <textarea className="form-control" rows={5} placeholder="Type your message here..." value={message} onChange={e => setMessage(e.target.value)} />
+          <textarea className="form-control" rows={4} placeholder="Type your message here..." value={message} onChange={e => setMessage(e.target.value)} />
         </div>
       </Modal>
 
