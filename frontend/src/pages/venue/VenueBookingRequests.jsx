@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import ConfirmModal from '../../components/ConfirmModal';
 import { useToast } from '../../components/Toast';
 
 const VenueBookingRequests = () => {
@@ -9,6 +10,7 @@ const VenueBookingRequests = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('Pending');
   const [responding, setResponding] = useState(null);
+  const [confirmDecline, setConfirmDecline] = useState(null);
   const [responseForm, setResponseForm] = useState({ ownerMessage: '', counterDate: '', counterPrice: '', counterNotes: '' });
   const [responseType, setResponseType] = useState('approve');
   const toast = useToast();
@@ -52,6 +54,9 @@ const VenueBookingRequests = () => {
 
   return (
     <div>
+      <ConfirmModal isOpen={Boolean(confirmDecline)} onClose={() => setConfirmDecline(null)}
+        onConfirm={async () => { if (!confirmDecline) return; await handleResponse(confirmDecline, 'Declined', 'This request has been declined.'); setConfirmDecline(null); }}
+        title="Decline Booking Request" message={`Decline the booking request from ${confirmDecline?.organizer?.name} for ${new Date(confirmDecline?.date || Date.now()).toDateString()}? This will notify the organizer.`} confirmLabel="Decline Request" />
       <div className="page-header"><h1>📥 Booking Requests</h1></div>
 
       <div className="filter-bar mb-4">
