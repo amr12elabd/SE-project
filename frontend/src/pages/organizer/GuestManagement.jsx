@@ -152,6 +152,7 @@ const GuestManagement = () => {
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-ghost btn-sm" onClick={() => openModal(g)}>Edit</button>
                         <button className="btn btn-outline btn-sm" onClick={() => setQrGuest(g)} title="Show QR Code">QR</button>
+                        <button className="btn btn-ghost btn-sm" title="Copy RSVP link" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/rsvp/${g.qrCodeValue}`); toast('RSVP link copied!', 'success'); }}>🔗</button>
                         <button className="btn btn-danger btn-sm" onClick={() => setConfirmRemove(g)}>Del</button>
                       </div>
                     </td>
