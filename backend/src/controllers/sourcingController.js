@@ -1,5 +1,6 @@
 const SourcingRequest = require('../models/SourcingRequest');
 const Notification = require('../models/Notification');
+const { notifyUser } = require('../socket');
 
 const getSourcingRequests = async (req, res, next) => {
   try {
@@ -58,17 +59,23 @@ const updateSourcingStatus = async (req, res, next) => {
     const request = await SourcingRequest.findById(req.params.id);
     if (!request) return res.status(404).json({ message: 'Sourcing request not found' });
 
+    const prevStatus = request.status;
     request.status = status || request.status;
     if (clarificationNote) request.clarificationNote = clarificationNote;
     if (delayNote) request.delayNote = delayNote;
     await request.save();
 
-    await Notification.create({
-      user: request.organizer,
-      title: `Sourcing Request ${status}`,
-      message: `Your sourcing request status updated to: ${status}`,
-      type: 'general'
-    });
+    const isDelay = delayNote && delayNote.trim().length > 0;
+    const statusChanged = status && status !== prevStatus;
+
+    if (isDelay || statusChanged) {
+      const title = isDelay ? '🚨 Delivery Delay Alert' : `Sourcing Request ${status}`;
+      const message = isDelay
+        ? `Vendor reported a delivery delay: "${delayNote}"`
+        : `Your sourcing request status updated to: ${status}`;
+      const notif = await Notification.create({ user: request.organizer, title, message, type: isDelay ? 'general' : 'general' });
+      try { notifyUser(request.organizer, notif); } catch { /* socket may not be available */ }
+    }
 
     res.json(request);
   } catch (err) { next(err); }
