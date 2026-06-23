@@ -45,13 +45,53 @@ const VenueReports = () => {
     { name: 'Counter-Proposed', value: report.bookings?.counterProposed || 0 },
   ].filter(d => d.value > 0) : [];
 
+  const venueName = venues.find(v => v._id === selectedVenue)?.name || 'venue';
+
+  const handleExportCSV = () => {
+    if (!report) return;
+    const rows = [
+      ['Venue Report — ' + venueName],
+      ['Generated', new Date().toLocaleString()],
+      [],
+      ['BOOKING SUMMARY'],
+      ['Total Requests', report.bookings?.total || 0],
+      ['Approved', report.bookings?.approved || 0],
+      ['Pending', report.bookings?.pending || 0],
+      ['Declined', report.bookings?.declined || 0],
+      ['Counter-Proposed', report.bookings?.counterProposed || 0],
+      [],
+      ['FEEDBACK SUMMARY'],
+      ['Total Reviews', report.feedback?.count || 0],
+      ['Average Rating', report.feedback?.avgRating?.toFixed(1) || 'N/A'],
+      ['Overall Avg', report.feedback?.avgOverall?.toFixed(1) || 'N/A'],
+      ['Food Avg', report.feedback?.avgFood?.toFixed(1) || 'N/A'],
+      ['Venue Avg', report.feedback?.avgVenue?.toFixed(1) || 'N/A'],
+      ['Organization Avg', report.feedback?.avgOrg?.toFixed(1) || 'N/A'],
+      [],
+      ['VENUE DETAILS'],
+      ['Rating', report.venue?.rating?.toFixed(1) || 'N/A'],
+      ['Review Count', report.venue?.reviewCount || 0],
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${venueName.replace(/\s+/g, '-').toLowerCase()}-report.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1>📊 Venue Reports</h1>
-        <select className="form-control" style={{ width: 220 }} value={selectedVenue} onChange={e => setSelectedVenue(e.target.value)}>
-          {venues.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
-        </select>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <select className="form-control" style={{ width: 220 }} value={selectedVenue} onChange={e => setSelectedVenue(e.target.value)}>
+            {venues.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
+          </select>
+          {report && <button className="btn btn-outline" onClick={handleExportCSV}>📥 Export CSV</button>}
+        </div>
       </div>
 
       {venues.length === 0 ? (
