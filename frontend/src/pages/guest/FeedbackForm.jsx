@@ -88,16 +88,42 @@ const FeedbackForm = () => {
 
   if (loading) return <LoadingSpinner fullPage />;
 
+  const selectedEventName = eventOptions.find(o => o.event._id === form.event)?.event?.name || 'the event';
+
   if (submitted) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, textAlign: 'center' }}>
-      <div style={{ fontSize: 80, marginBottom: 20 }}>🎉</div>
-      <h2>{wasUpdated ? 'Your Feedback Has Been Updated!' : 'Thank You for Your Feedback!'}</h2>
-      <p className="text-muted" style={{ maxWidth: 400, lineHeight: 1.7 }}>
-        {wasUpdated
-          ? 'Your updated review has been saved successfully.'
-          : 'Your review helps organizers improve future events. We really appreciate you taking the time to share your experience.'}
-      </p>
-      <div style={{ fontSize: 36, marginTop: 20 }}>{'★'.repeat(form.overallRating)}{'☆'.repeat(5 - form.overallRating)}</div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: 24 }}>
+      <div style={{ background: '#fff', borderRadius: 20, maxWidth: 480, width: '100%', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.12)', textAlign: 'center' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1a6b5c, #2d9b87)', padding: '36px 32px 28px', color: '#fff' }}>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>⭐</div>
+          <h2 style={{ margin: 0, fontWeight: 800 }}>{wasUpdated ? 'Review Updated!' : 'Thank You!'}</h2>
+          <p style={{ margin: '8px 0 0', opacity: 0.85 }}>{wasUpdated ? 'Your feedback has been updated' : 'Your feedback has been submitted'}</p>
+        </div>
+        <div style={{ padding: 32 }}>
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '16px 20px', marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Your rating for</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#1a6b5c', marginBottom: 10 }}>{selectedEventName}</div>
+            <div style={{ fontSize: 32, color: '#f59e0b', letterSpacing: 2 }}>
+              {'★'.repeat(form.overallRating)}{'☆'.repeat(5 - form.overallRating)}
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginTop: 6 }}>
+              {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][form.overallRating]}
+            </div>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.7, margin: '0 0 24px' }}>
+            {wasUpdated
+              ? 'Your updated review has been saved. Thank you for taking the time to improve your feedback!'
+              : 'Your review helps organizers make every future event better. We truly appreciate you sharing your experience with us. ☕'}
+          </p>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setSubmitted(false); setForm(f => ({ ...f, overallRating: 0, foodRating: 0, venueRating: 0, organizationRating: 0, comments: '' })); }}>
+              Leave Another Review
+            </button>
+            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => window.location.href = '/dashboard'}>
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
