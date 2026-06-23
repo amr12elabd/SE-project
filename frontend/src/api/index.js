@@ -39,6 +39,8 @@ export const venuesAPI = {
   delete: (id) => api.delete(`/venues/${id}`),
   getMyVenues: () => api.get('/venues/my-venues'),
   getOwnerVenues: () => api.get('/venues/my-venues'),
+  markUnavailable: (id, date) => api.post(`/venues/${id}/unavailable`, { date }),
+  removeUnavailable: (id, date) => api.delete(`/venues/${id}/unavailable`, { data: { date } }),
 };
 
 // Bookings

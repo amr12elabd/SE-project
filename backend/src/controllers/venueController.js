@@ -119,4 +119,32 @@ const getVenueReport = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getVenues, createVenue, getVenue, updateVenue, deleteVenue, getOwnerVenues, getVenueReport };
+const markUnavailableDate = async (req, res, next) => {
+  try {
+    const { date } = req.body;
+    if (!date) return res.status(400).json({ message: 'Date is required' });
+    const venue = await Venue.findById(req.params.id);
+    if (!venue) return res.status(404).json({ message: 'Venue not found' });
+    if (venue.owner.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
+
+    const d = new Date(date);
+    const already = venue.unavailableDates.some(ud => new Date(ud).toISOString().slice(0, 10) === d.toISOString().slice(0, 10));
+    if (!already) { venue.unavailableDates.push(d); await venue.save(); }
+    res.json({ unavailableDates: venue.unavailableDates });
+  } catch (err) { next(err); }
+};
+
+const removeUnavailableDate = async (req, res, next) => {
+  try {
+    const { date } = req.body;
+    const venue = await Venue.findById(req.params.id);
+    if (!venue) return res.status(404).json({ message: 'Venue not found' });
+    if (venue.owner.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
+
+    venue.unavailableDates = venue.unavailableDates.filter(ud => new Date(ud).toISOString().slice(0, 10) !== new Date(date).toISOString().slice(0, 10));
+    await venue.save();
+    res.json({ unavailableDates: venue.unavailableDates });
+  } catch (err) { next(err); }
+};
+
+module.exports = { getVenues, createVenue, getVenue, updateVenue, deleteVenue, getOwnerVenues, getVenueReport, markUnavailableDate, removeUnavailableDate };
