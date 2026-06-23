@@ -20,6 +20,7 @@ const AssignedTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [updating, setUpdating] = useState(null);
   const toast = useToast();
 
@@ -44,15 +45,27 @@ const AssignedTasks = () => {
     finally { setUpdating(null); }
   };
 
-  const filtered = tasks.filter(t => !filter || t.status === filter);
+  const overdue = tasks.filter(t => t.status !== 'Done' && t.dueDate && new Date(t.dueDate) < new Date()).length;
+  const filtered = tasks.filter(t => {
+    const matchStatus = !filter || t.status === filter;
+    const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.event?.name?.toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
+  });
   const priorityColor = { Low: 'var(--success)', Medium: 'var(--warning)', High: 'var(--danger)' };
 
   if (loading) return <LoadingSpinner fullPage />;
 
   return (
     <div>
-      <div className="page-header"><h1>My Tasks</h1></div>
+      <div className="page-header">
+        <div>
+          <h1>My Tasks</h1>
+          <p className="text-muted text-sm">{tasks.filter(t => t.status === 'Done').length} completed · {tasks.filter(t => t.status !== 'Done').length} remaining{overdue > 0 ? ` · ⚠️ ${overdue} overdue` : ''}</p>
+        </div>
+      </div>
+      {overdue > 0 && <div className="alert alert-danger mb-4">🚨 You have <strong>{overdue} overdue task{overdue > 1 ? 's' : ''}</strong>. Please complete or flag them to your organizer immediately.</div>}
       <div className="filter-bar">
+        <input type="search" className="form-control" placeholder="Search tasks..." value={search} onChange={e => setSearch(e.target.value)} />
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
           <option value="">All Statuses</option>
           {['Pending', 'In Progress', 'Done'].map(s => <option key={s}>{s}</option>)}
