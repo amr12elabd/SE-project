@@ -19,6 +19,7 @@ const InvoiceReview = () => {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [updating, setUpdating] = useState(null);
   const toast = useToast();
@@ -57,6 +58,7 @@ const InvoiceReview = () => {
       )}
 
       <div className="filter-bar">
+        <input type="search" className="form-control" placeholder="Search by vendor or invoice number..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
           <option value="">All Statuses</option>
           {['Pending Review', 'Approved', 'Rejected', 'Paid'].map(s => <option key={s}>{s}</option>)}
@@ -74,7 +76,7 @@ const InvoiceReview = () => {
                 <tr><th>Invoice #</th><th>Vendor</th><th>Event</th><th>Total (EGP)</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
               </thead>
               <tbody>
-                {invoices.map(inv => (
+                {invoices.filter(inv => !search || inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) || inv.vendor?.name?.toLowerCase().includes(search.toLowerCase())).map(inv => (
                   <tr key={inv._id}>
                     <td style={{ fontWeight: 500, color: 'var(--primary)', cursor: 'pointer' }} onClick={() => setSelected(inv)}>{inv.invoiceNumber}</td>
                     <td>{inv.vendor?.name}</td>
