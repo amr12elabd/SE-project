@@ -102,6 +102,59 @@ const VenueLayoutDesigner = () => {
     finally { setSaving(false); }
   };
 
+  const handleExportImage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const svgEl = canvas.querySelector('svg');
+    if (!svgEl) {
+      // Fallback: export the div as an image using canvas API
+      const rect = canvas.getBoundingClientRect();
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = 800;
+      exportCanvas.height = 600;
+      const ctx = exportCanvas.getContext('2d');
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, 800, 600);
+      elements.forEach(el => {
+        ctx.fillStyle = el.color + '33';
+        ctx.strokeStyle = el.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(el.x, el.y, el.width, el.height, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#1a202c';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(el.label, el.x + el.width / 2, el.y + el.height / 2);
+      });
+      const link = document.createElement('a');
+      link.download = `layout-${selectedEvent}.png`;
+      link.href = exportCanvas.toDataURL('image/png');
+      link.click();
+      toast('Layout exported as PNG!', 'success');
+      return;
+    }
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svgEl);
+    const img = new Image();
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = 800; c.height = 600;
+      c.getContext('2d').drawImage(img, 0, 0);
+      const link = document.createElement('a');
+      link.download = `layout-${selectedEvent}.png`;
+      link.href = c.toDataURL('image/png');
+      link.click();
+      URL.revokeObjectURL(url);
+      toast('Layout exported as PNG!', 'success');
+    };
+    img.src = url;
+  };
+
   const selectedEl = elements.find(el => el.id === selectedId);
 
   if (loading) return <LoadingSpinner fullPage />;
@@ -118,6 +171,7 @@ const VenueLayoutDesigner = () => {
             <input type="checkbox" checked={sharedWithStaff} onChange={e => setSharedWithStaff(e.target.checked)} />
             Share with Staff
           </label>
+          <button className="btn btn-outline" onClick={handleExportImage} disabled={elements.length === 0}>🖼️ Export PNG</button>
           <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : '💾 Save Layout'}</button>
         </div>
       </div>
