@@ -16,6 +16,8 @@ const ConfirmedBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [updating, setUpdating] = useState(null);
   const toast = useToast();
 
@@ -40,12 +42,12 @@ const ConfirmedBookings = () => {
     finally { setUpdating(null); }
   };
 
-  const filtered = bookings.filter(b =>
-    !search ||
-    b.venue?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    b.organizer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    b.event?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = bookings.filter(b => {
+    const matchSearch = !search || b.venue?.name?.toLowerCase().includes(search.toLowerCase()) || b.organizer?.name?.toLowerCase().includes(search.toLowerCase()) || b.event?.name?.toLowerCase().includes(search.toLowerCase());
+    const matchFrom = !dateFrom || new Date(b.date) >= new Date(dateFrom);
+    const matchTo = !dateTo || new Date(b.date) <= new Date(dateTo);
+    return matchSearch && matchFrom && matchTo;
+  });
 
   const upcoming = filtered.filter(b => new Date(b.date) >= new Date());
   const past = filtered.filter(b => new Date(b.date) < new Date());
@@ -63,9 +65,10 @@ const ConfirmedBookings = () => {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>🏛️ {b.venue?.name}</div>
-            <div style={{ color: 'var(--text-muted)', fontSize: 13, display: 'flex', gap: 16 }}>
-              <span>👤 Organizer: {b.organizer?.name}</span>
-              <span>📧 {b.organizer?.email}</span>
+            <div style={{ color: 'var(--text-muted)', fontSize: 13, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <span>👤 {b.organizer?.name}</span>
+              <span>📧 <a href={`mailto:${b.organizer?.email}`} style={{ color: 'var(--primary)' }}>{b.organizer?.email}</a></span>
+              {b.organizer?.phone && <span>📞 <a href={`tel:${b.organizer?.phone}`} style={{ color: 'var(--primary)' }}>{b.organizer?.phone}</a></span>}
               <span>👥 {b.expectedAttendees} attendees</span>
             </div>
             {b.event?.name && <div className="text-sm text-muted mt-1">🎭 Event: {b.event.name}</div>}
@@ -88,7 +91,22 @@ const ConfirmedBookings = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>✅ Confirmed Bookings</h1></div>
+      <div className="page-header">
+        <h1>✅ Confirmed Bookings</h1>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{filtered.length} booking{filtered.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div className="filter-bar">
+        <input type="search" className="form-control" placeholder="Search by venue, organizer or event..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <label style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>From</label>
+          <input type="date" className="form-control" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <label style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>To</label>
+          <input type="date" className="form-control" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+        </div>
+        {(dateFrom || dateTo) && <button className="btn btn-ghost btn-sm" onClick={() => { setDateFrom(''); setDateTo(''); }}>Clear</button>}
+      </div>
 
       <div className="filter-bar mb-4">
         <input type="search" className="form-control" placeholder="Search by venue, organizer, or event..." value={search} onChange={e => setSearch(e.target.value)} />
