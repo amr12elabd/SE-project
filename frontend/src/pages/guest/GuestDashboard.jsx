@@ -27,6 +27,10 @@ const GuestDashboard = () => {
 
   const attending = invitations.filter(i => i.guest?.rsvpStatus === 'Attending').length;
   const pending = invitations.filter(i => i.guest?.rsvpStatus === 'Pending').length;
+  const nextEvent = invitations
+    .filter(i => i.guest?.rsvpStatus === 'Attending' && i.event?.date && new Date(i.event.date) >= new Date())
+    .sort((a, b) => new Date(a.event.date) - new Date(b.event.date))[0];
+  const daysUntilNext = nextEvent ? Math.ceil((new Date(nextEvent.event.date) - new Date()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
     <div>
@@ -37,6 +41,24 @@ const GuestDashboard = () => {
           <p className="text-muted text-sm">Guest Portal · Your upcoming events and invitations</p>
         </div>
       </div>
+
+      {/* Next Event Countdown */}
+      {nextEvent && daysUntilNext !== null && (
+        <div style={{ background: 'linear-gradient(135deg, #1a6b5c, #2d9b87)', borderRadius: 14, padding: '20px 28px', marginBottom: 20, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>Your next confirmed event</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{nextEvent.event.name}</div>
+            <div style={{ fontSize: 13, opacity: 0.85, marginTop: 4 }}>
+              📅 {new Date(nextEvent.event.date).toLocaleDateString('en-EG', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {nextEvent.event.startTime && ` · ${nextEvent.event.startTime}`}
+            </div>
+          </div>
+          <div style={{ textAlign: 'center', background: 'rgba(255,255,255,0.2)', borderRadius: 12, padding: '12px 24px' }}>
+            <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1 }}>{daysUntilNext === 0 ? '🎉' : daysUntilNext}</div>
+            <div style={{ fontSize: 12, opacity: 0.9 }}>{daysUntilNext === 0 ? 'TODAY!' : daysUntilNext === 1 ? 'day away' : 'days away'}</div>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
         <div className="stat-card" style={{ flex: 1 }}>
