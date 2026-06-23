@@ -31,6 +31,10 @@ const EventDetails = () => {
   const ts = dashboard?.taskStats || {};
   const gs = dashboard?.guestStats || {};
   const bud = dashboard?.budget || {};
+  const taskCompletionPct = ts.total > 0 ? Math.round((ts.done / ts.total) * 100) : 0;
+  const rsvpRate = gs.total > 0 ? Math.round((gs.attending / gs.total) * 100) : 0;
+  const daysUntil = Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24));
+  const budgetPct = bud.totalBudget > 0 ? Math.round((bud.totalActual / bud.totalBudget) * 100) : 0;
 
   const taskChartData = [
     { name: 'Pending', value: ts.pending || 0 },
@@ -60,12 +64,41 @@ const EventDetails = () => {
         <button className="btn btn-outline" onClick={() => navigate(`/events/${id}/edit`)}>✏️ Edit Event</button>
       </div>
 
+      {/* Countdown Banner */}
+      {daysUntil >= 0 && daysUntil <= 30 && (
+        <div style={{ background: daysUntil === 0 ? '#1a6b5c' : daysUntil <= 3 ? '#dd6b20' : 'var(--primary-light)', borderRadius: 10, padding: '14px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 24 }}>{daysUntil === 0 ? '🎉' : daysUntil <= 3 ? '⚡' : '📅'}</span>
+          <div style={{ color: daysUntil <= 3 ? '#fff' : 'var(--primary)', fontWeight: 600 }}>
+            {daysUntil === 0 ? 'This event is happening TODAY!' : daysUntil === 1 ? 'Event is TOMORROW — final checks needed!' : `${daysUntil} days until this event`}
+          </div>
+        </div>
+      )}
+
       {/* Info Grid */}
-      <div className="grid-4 mb-6">
-        <DashboardCard icon="📋" label="Total Tasks" value={ts.total || 0} color="#3182ce" sub={`${ts.done || 0} done`} />
-        <DashboardCard icon="🎟️" label="Invited Guests" value={gs.total || 0} color="#1a6b5c" sub={`${gs.attending || 0} attending`} />
-        <DashboardCard icon="✅" label="Checked In" value={gs.checkedIn || 0} color="#38a169" />
-        <DashboardCard icon="💰" label="Budget Used" value={`${bud.totalActual || 0} EGP`} color="#dd6b20" sub={`of ${bud.totalBudget || 0} EGP`} />
+      <div className="grid-4 mb-4">
+        <DashboardCard icon="📋" label="Task Completion" value={`${taskCompletionPct}%`} color="#3182ce" sub={`${ts.done || 0} of ${ts.total || 0} done`} />
+        <DashboardCard icon="🎟️" label="RSVP Rate" value={`${rsvpRate}%`} color="#1a6b5c" sub={`${gs.attending || 0} of ${gs.total || 0} attending`} />
+        <DashboardCard icon="✅" label="Checked In" value={gs.checkedIn || 0} color="#38a169" sub={gs.total > 0 ? `${Math.round((gs.checkedIn / gs.total) * 100)}% of guests` : '—'} />
+        <DashboardCard icon="💰" label="Budget Used" value={`${budgetPct}%`} color={budgetPct > 100 ? '#e53e3e' : budgetPct > 80 ? '#dd6b20' : '#38a169'} sub={`${bud.totalActual?.toLocaleString() || 0} / ${bud.totalBudget?.toLocaleString() || 0} EGP`} />
+      </div>
+
+      {/* Progress bars */}
+      <div className="card card-body mb-6">
+        <h3 style={{ marginBottom: 16 }}>Event Readiness</h3>
+        {[
+          { label: 'Task Completion', pct: taskCompletionPct, color: '#3182ce' },
+          { label: 'RSVP Rate', pct: rsvpRate, color: '#38a169' },
+          { label: 'Budget Utilization', pct: Math.min(100, budgetPct), color: budgetPct > 80 ? '#dd6b20' : '#1a6b5c' },
+        ].map(item => (
+          <div key={item.label} style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 5 }}>
+              <span>{item.label}</span><span style={{ fontWeight: 700, color: item.color }}>{item.pct}%</span>
+            </div>
+            <div style={{ height: 8, background: 'var(--bg)', borderRadius: 4 }}>
+              <div style={{ width: `${item.pct}%`, height: '100%', background: item.color, borderRadius: 4, transition: 'width 0.5s' }} />
+            </div>
+          </div>
+        ))}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 24 }}>
