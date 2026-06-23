@@ -11,6 +11,7 @@ const StaffManagement = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [createModal, setCreateModal] = useState(false);
+  const [createRole, setCreateRole] = useState('staff');
   const [viewModal, setViewModal] = useState(null);
   const [confirmDeactivate, setConfirmDeactivate] = useState(null);
   const [staffTasks, setStaffTasks] = useState([]);
@@ -34,12 +35,12 @@ const StaffManagement = () => {
     if (!form.name || !form.email || !form.password) { toast('Name, email and password required', 'error'); return; }
     setSaving(true);
     try {
-      const res = await usersAPI.create({ ...form, role: 'staff' });
-      setStaff(prev => [...prev, res.data]);
-      toast('Staff member created!', 'success');
+      const res = await usersAPI.create({ ...form, role: createRole });
+      if (createRole === 'staff') setStaff(prev => [...prev, res.data]);
+      toast(`${createRole.charAt(0).toUpperCase() + createRole.slice(1)} account created! They can now log in with ${form.email} / ${form.password}`, 'success');
       setCreateModal(false);
       setForm({ name: '', email: '', password: 'password123', phone: '', bio: '' });
-    } catch (err) { toast(err.response?.data?.message || 'Failed to create staff', 'error'); }
+    } catch (err) { toast(err.response?.data?.message || 'Failed to create account', 'error'); }
     finally { setSaving(false); }
   };
 
@@ -70,8 +71,12 @@ const StaffManagement = () => {
       <ConfirmModal isOpen={Boolean(confirmDeactivate)} onClose={() => setConfirmDeactivate(null)} onConfirm={handleDeactivate}
         title="Deactivate Staff Member" message={`Deactivate ${confirmDeactivate?.name}? They will no longer be able to log in or receive task assignments.`} confirmLabel="Deactivate" />
       <div className="page-header">
-        <h1>Staff Management</h1>
-        <button className="btn btn-primary" onClick={() => setCreateModal(true)}>+ Add Staff Member</button>
+        <h1>Team & Account Management</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-outline" onClick={() => { setCreateRole('vendor'); setCreateModal(true); }}>+ Add Vendor</button>
+          <button className="btn btn-outline" onClick={() => { setCreateRole('guest'); setCreateModal(true); }}>+ Add Guest</button>
+          <button className="btn btn-primary" onClick={() => { setCreateRole('staff'); setCreateModal(true); }}>+ Add Staff Member</button>
+        </div>
       </div>
 
       <div className="filter-bar">
@@ -106,7 +111,7 @@ const StaffManagement = () => {
       </div>
 
       {/* Create Modal */}
-      <Modal isOpen={createModal} onClose={() => setCreateModal(false)} title="Add Staff Member"
+      <Modal isOpen={createModal} onClose={() => setCreateModal(false)} title={`Add ${createRole.charAt(0).toUpperCase() + createRole.slice(1)} Account`}
         footer={<><button className="btn btn-ghost" onClick={() => setCreateModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleCreate} disabled={saving}>{saving ? 'Creating...' : 'Create Account'}</button></>}>
         <form onSubmit={handleCreate}>
           <div className="form-row">
