@@ -10,6 +10,7 @@ const VenueSearch = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ city: '', area: '', minCapacity: '', maxCapacity: '', minPrice: '', maxPrice: '' });
   const [search, setSearch] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [bookingModal, setBookingModal] = useState(null);
   const [bookingForm, setBookingForm] = useState({ event: '', date: '', expectedAttendees: '', specialRequirements: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -49,7 +50,11 @@ const VenueSearch = () => {
     finally { setSubmitting(false); }
   };
 
-  const filtered = venues.filter(v => !search || v.name.toLowerCase().includes(search.toLowerCase()) || v.location?.area?.toLowerCase().includes(search.toLowerCase()));
+  const filtered = venues.filter(v => {
+    const matchSearch = !search || v.name.toLowerCase().includes(search.toLowerCase()) || v.location?.area?.toLowerCase().includes(search.toLowerCase());
+    const matchDate = !dateFilter || !(v.unavailableDates || []).some(d => new Date(d).toISOString().slice(0, 10) === dateFilter);
+    return matchSearch && matchDate;
+  });
 
   if (loading) return <LoadingSpinner fullPage />;
 
@@ -80,8 +85,15 @@ const VenueSearch = () => {
             <label className="form-label">Max Price/Day (EGP)</label>
             <input type="number" className="form-control" value={filters.maxPrice} onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} />
           </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label">Event Date</label>
+            <input type="date" className="form-control" value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
+          </div>
         </div>
-        <button className="btn btn-primary" onClick={handleSearch}>Search Venues</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-primary" onClick={handleSearch}>Search Venues</button>
+          {dateFilter && <button className="btn btn-ghost btn-sm" onClick={() => setDateFilter('')}>Clear Date</button>}
+        </div>
       </div>
 
       <p className="text-muted text-sm mb-4">{filtered.length} venues found</p>
@@ -96,7 +108,12 @@ const VenueSearch = () => {
               <div className="card-body">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <h3 style={{ flex: 1 }}>{v.name}</h3>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--secondary)' }}>{v.pricing?.perDay?.toLocaleString()} EGP/day</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--secondary)' }}>{v.pricing?.perDay?.toLocaleString()} EGP/day</div>
+                    {dateFilter && !(v.unavailableDates || []).some(d => new Date(d).toISOString().slice(0, 10) === dateFilter) && (
+                      <span style={{ fontSize: 10, background: '#f0fdf4', color: '#38a169', border: '1px solid #bbf7d0', borderRadius: 4, padding: '2px 6px', fontWeight: 700 }}>✓ Available {new Date(dateFilter).toLocaleDateString()}</span>
+                    )}
+                  </div>
                 </div>
                 <p className="text-muted text-sm mb-3">{v.description?.slice(0, 100)}...</p>
                 <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
