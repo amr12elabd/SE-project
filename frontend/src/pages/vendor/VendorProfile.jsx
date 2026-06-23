@@ -3,6 +3,7 @@ import { vendorsAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 const SUPPLY_CATEGORIES = ['Food & Beverages', 'Audio & Visual', 'Décor & Flowers', 'Furniture & Tents', 'Catering Equipment', 'Photography', 'Entertainment', 'Transportation', 'Cleaning Services', 'Security'];
 const CAIRO_AREAS = ['Maadi', 'Zamalek', 'Heliopolis', 'Nasr City', 'New Cairo', 'October City', 'Downtown', 'Dokki', 'Mohandessin', 'Sheikh Zayed'];
@@ -12,6 +13,7 @@ const VendorProfile = () => {
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [ratings, setRatings] = useState([]);
   const [form, setForm] = useState({
     companyName: '',
     suppliesOffered: [],
@@ -40,6 +42,11 @@ const VendorProfile = () => {
           });
         }
       } catch { /* no profile yet */ }
+      // Load ratings
+      try {
+        const rRes = await vendorsAPI.getRatings(user._id);
+        setRatings(rRes.data || []);
+      } catch { /* ignore */ }
       finally { setLoading(false); }
     };
     fetch();
@@ -87,9 +94,50 @@ const VendorProfile = () => {
 
   if (loading) return <LoadingSpinner fullPage />;
 
+  const avgRating = ratings.length > 0 ? (ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1) : null;
+  const categoryAvgs = ratings.length > 0 ? ['quality','punctuality','communication','value'].map(k => ({ metric: k.charAt(0).toUpperCase() + k.slice(1), value: Math.round(ratings.filter(r => r.categories?.[k]).reduce((s, r) => s + (r.categories[k] || 0), 0) / ratings.filter(r => r.categories?.[k]).length * 20) || 0 })) : [];
+
   return (
     <div>
       <div className="page-header"><h1>👤 Vendor Profile</h1></div>
+
+      {/* Ratings Summary */}
+      {ratings.length > 0 && (
+        <div className="card card-body mb-4">
+          <h3 className="mb-4">⭐ My Ratings & Reviews</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 56, fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}>{avgRating}</div>
+              <div style={{ color: '#f59e0b', fontSize: 22, margin: '6px 0' }}>{'★'.repeat(Math.round(Number(avgRating)))}{'☆'.repeat(5 - Math.round(Number(avgRating)))}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{ratings.length} review{ratings.length !== 1 ? 's' : ''}</div>
+            </div>
+            {categoryAvgs.length > 0 && (
+              <div style={{ height: 180 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={categoryAvgs}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="metric" tick={{ fontSize: 12 }} />
+                    <Radar dataKey="value" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.25} />
+                    <Tooltip formatter={v => `${v}%`} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+          <div style={{ marginTop: 16 }}>
+            {ratings.slice(0, 3).map((r, i) => (
+              <div key={i} style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 16px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontWeight: 600, fontSize: 13 }}>{r.organizer?.name || 'Organizer'}</span>
+                  <span style={{ color: '#f59e0b' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                </div>
+                {r.review && <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>{r.review}</p>}
+                {r.event && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Event: {r.event.name}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="card card-body mb-4">
