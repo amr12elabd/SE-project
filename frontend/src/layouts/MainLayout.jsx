@@ -35,7 +35,14 @@ const MainLayout = () => {
   const { lang, toggleLang } = useLang();
   const [unreadCount, setUnreadCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [reminder, setReminder] = useState(null); // { eventName, guests[] }
+  const [reminder, setReminder] = useState(null);
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []); // { eventName, guests[] }
 
   useEffect(() => {
     const fetchNotifs = async () => {
@@ -144,6 +151,11 @@ const MainLayout = () => {
               style={{ display: 'none' }} id="mobile-menu-btn">☰</button>
             <span className="navbar-title">PopEyez Platform</span>
             <div className="navbar-actions">
+              {installPrompt && (
+                <button onClick={() => { installPrompt.prompt(); installPrompt.userChoice.then(() => setInstallPrompt(null)); }} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                  📲 Install App
+                </button>
+              )}
               <button onClick={toggleLang} title="Toggle Arabic/English" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 {lang === 'en' ? '🇪🇬 عربي' : '🇬🇧 EN'}
               </button>
