@@ -3,7 +3,7 @@ import { reportsAPI, eventsAPI } from '../../api';
 import DashboardCard from '../../components/DashboardCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, CartesianGrid } from 'recharts';
 import { exportReportPDF } from '../../utils/exportPDF';
 
 const Reports = () => {
@@ -13,6 +13,9 @@ const Reports = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('full');
   const [exporting, setExporting] = useState(false);
+  const [compareEvents, setCompareEvents] = useState([]);
+  const [compareReports, setCompareReports] = useState([]);
+  const [comparing, setComparing] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -38,6 +41,16 @@ const Reports = () => {
     };
     fetch();
   }, [selectedEvent]);
+
+  const loadComparison = async (ids) => {
+    if (ids.length === 0) { setCompareReports([]); return; }
+    setComparing(true);
+    try {
+      const results = await Promise.all(ids.map(id => reportsAPI.full(id).then(r => ({ ...r.data, eventId: id, eventName: events.find(e => e._id === id)?.name || id }))));
+      setCompareReports(results);
+    } catch { /* ignore */ }
+    finally { setComparing(false); }
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -103,16 +116,100 @@ const Reports = () => {
       </div>
 
       <div className="tabs mb-4">
-        {['full', 'attendance', 'financial', 'tasks', 'feedback'].map(t => (
+        {['full', 'attendance', 'financial', 'tasks', 'feedback', 'compare'].map(t => (
           <button key={t} className={`tab-btn ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
-            {t === 'full' ? '📊 Overview' : t === 'attendance' ? '👥 Attendance' : t === 'financial' ? '💰 Financial' : t === 'tasks' ? '✅ Tasks' : '⭐ Feedback'}
+            {t === 'full' ? '📊 Overview' : t === 'attendance' ? '👥 Attendance' : t === 'financial' ? '💰 Financial' : t === 'tasks' ? '✅ Tasks' : t === 'feedback' ? '⭐ Feedback' : '🔀 Compare Events'}
           </button>
         ))}
       </div>
 
-      {!report ? (
+      {/* ── COMPARE EVENTS TAB (shown regardless of selected event) ── */}
+      {tab === 'compare' && (
+        <div className="mb-6">
+          <div className="card card-body mb-4">
+            <h3 className="mb-3">Select Events to Compare</h3>
+            <p className="text-muted text-sm mb-4">Pick 2–5 events to see a side-by-side comparison of attendance, budget usage, and feedback.</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {events.map(ev => (
+                <label key={ev._id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 8, border: `2px solid ${compareEvents.includes(ev._id) ? 'var(--primary)' : 'var(--border)'}`, background: compareEvents.includes(ev._id) ? 'var(--primary-light)' : '#fff', cursor: 'pointer', fontSize: 13 }}>
+                  <input type="checkbox" checked={compareEvents.includes(ev._id)} onChange={() => {
+                    const next = compareEvents.includes(ev._id) ? compareEvents.filter(id => id !== ev._id) : [...compareEvents, ev._id].slice(0, 5);
+                    setCompareEvents(next);
+                    loadComparison(next);
+                  }} />
+                  {ev.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {comparing && <div style={{ textAlign: 'center', padding: 40 }}><p>Loading comparison data...</p></div>}
+
+          {!comparing && compareReports.length >= 2 && (
+            <>
+              <div className="card card-body mb-4">
+                <h3 className="mb-4">RSVP Rate Comparison (%)</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={compareReports.map(r => ({ name: r.eventName?.slice(0, 20), 'RSVP Rate': r.attendance?.total > 0 ? Math.round((r.attendance.attending / r.attendance.total) * 100) : 0, 'Check-In Rate': r.attendance?.total > 0 ? Math.round((r.attendance.checkedIn / r.attendance.total) * 100) : 0 }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} unit="%" />
+                    <Tooltip formatter={v => `${v}%`} />
+                    <Legend />
+                    <Bar dataKey="RSVP Rate" fill="var(--primary)" radius={[4,4,0,0]} />
+                    <Bar dataKey="Check-In Rate" fill="var(--secondary)" radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="card card-body mb-4">
+                <h3 className="mb-4">Budget Utilization & Avg Feedback Rating</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={compareReports.map(r => ({ name: r.eventName?.slice(0, 20), 'Budget Used (%)': r.financial?.totalBudget > 0 ? Math.round((r.financial.totalActual / r.financial.totalBudget) * 100) : 0, 'Avg Rating (×20)': Math.round((r.feedback?.avgRating || 0) * 20) }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Budget Used (%)" fill="#3182ce" radius={[4,4,0,0]} />
+                    <Bar dataKey="Avg Rating (×20)" fill="#38a169" radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="card">
+                <div className="card-header"><h3>Summary Table</h3></div>
+                <div className="table-wrap">
+                  <table>
+                    <thead><tr><th>Event</th><th>Guests</th><th>RSVP %</th><th>Check-In %</th><th>Budget Used</th><th>Avg Rating</th><th>Feedback</th></tr></thead>
+                    <tbody>
+                      {compareReports.map(r => (
+                        <tr key={r.eventId}>
+                          <td style={{ fontWeight: 600 }}>{r.eventName}</td>
+                          <td>{r.attendance?.total || 0}</td>
+                          <td>{r.attendance?.total > 0 ? Math.round((r.attendance.attending / r.attendance.total) * 100) : 0}%</td>
+                          <td>{r.attendance?.total > 0 ? Math.round((r.attendance.checkedIn / r.attendance.total) * 100) : 0}%</td>
+                          <td>{r.financial?.totalBudget > 0 ? `${Math.round((r.financial.totalActual / r.financial.totalBudget) * 100)}%` : '—'}</td>
+                          <td>{'★'.repeat(Math.round(r.feedback?.avgRating || 0))}{r.feedback?.avgRating ? ` (${r.feedback.avgRating}/5)` : '—'}</td>
+                          <td>{r.feedback?.total || 0} reviews</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {!comparing && compareReports.length < 2 && compareEvents.length > 0 && (
+            <div className="empty-state"><p>Select at least 2 events to see the comparison.</p></div>
+          )}
+        </div>
+      )}
+
+      {tab !== 'compare' && !report ? (
         <div className="empty-state"><div className="empty-state-icon">📊</div><h3>No data available</h3><p>This event has no report data yet.</p></div>
-      ) : (
+      ) : tab !== 'compare' && (
         <>
           {/* ── OVERVIEW TAB ── */}
           {tab === 'full' && (
@@ -327,6 +424,7 @@ const Reports = () => {
       )}
     </div>
   );
+
 };
 
 export default Reports;
