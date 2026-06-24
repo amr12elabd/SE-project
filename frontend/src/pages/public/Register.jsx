@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LanguageContext';
 
 const Register = () => {
+  const { t } = useLang();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'organizer', phone: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,7 +35,7 @@ const Register = () => {
         <div className="auth-logo">
           <div style={{ fontSize: 48 }}>☕</div>
           <h1>PopEyez</h1>
-          <p>Create your account</p>
+          <p>{t('createAccountDesc')}</p>
         </div>
 
         {error && <div className="alert alert-danger">{error}</div>}
@@ -41,44 +43,44 @@ const Register = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Full Name *</label>
+              <label className="form-label">{t('fullNameLabel')}</label>
               <input className="form-control" placeholder="Your name" value={form.name} onChange={set('name')} />
             </div>
             <div className="form-group">
-              <label className="form-label">Phone</label>
+              <label className="form-label">{t('phoneLabel')}</label>
               <input className="form-control" placeholder="+20 1xx xxx xxxx" value={form.phone} onChange={set('phone')} />
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Email Address *</label>
+            <label className="form-label">{t('emailAddress')} *</label>
             <input type="email" className="form-control" placeholder="you@example.com" value={form.email} onChange={set('email')} />
           </div>
           <div className="form-group">
-            <label className="form-label">Role *</label>
+            <label className="form-label">{t('roleLabel')}</label>
             <select className="form-control" value={form.role} onChange={set('role')}>
-              <option value="organizer">Event Organizer</option>
-              <option value="vendor">Vendor / Supplier</option>
-              <option value="venueOwner">Venue Owner</option>
-              <option value="guest">Guest</option>
+              <option value="organizer">{t('eventOrganizer')}</option>
+              <option value="vendor">{t('vendorSupplier')}</option>
+              <option value="venueOwner">{t('venueOwnerRole')}</option>
+              <option value="guest">{t('guestRole')}</option>
             </select>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Password *</label>
+              <label className="form-label">{t('passwordLabel')} *</label>
               <input type="password" className="form-control" placeholder="Min. 6 chars" value={form.password} onChange={set('password')} />
             </div>
             <div className="form-group">
-              <label className="form-label">Confirm Password *</label>
+              <label className="form-label">{t('confirmPasswordLabel')}</label>
               <input type="password" className="form-control" placeholder="Repeat password" value={form.confirmPassword} onChange={set('confirmPassword')} />
             </div>
           </div>
           <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Creating Account...' : t('createAccount')}
           </button>
         </form>
 
         <div className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          {t('alreadyHaveAccount')} <Link to="/login">{t('signIn')}</Link>
         </div>
       </div>
     </div>

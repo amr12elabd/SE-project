@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { venuesAPI, bookingsAPI, eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import { useToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const VenueSearch = () => {
+  const { t } = useLang();
   const [venues, setVenues] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ const VenueSearch = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>Venue Search</h1></div>
+      <div className="page-header"><h1>{t('venues')}</h1></div>
 
       <div className="card card-body mb-4">
         <h3 className="mb-4">Search & Filter Venues</h3>
@@ -70,28 +72,28 @@ const VenueSearch = () => {
             <input className="form-control" placeholder="Name or area..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <div className="form-group" style={{ margin: 0 }}>
-            <label className="form-label">City</label>
+            <label className="form-label">{t('city')}</label>
             <input className="form-control" placeholder="Cairo" value={filters.city} onChange={e => setFilters(f => ({ ...f, city: e.target.value }))} />
           </div>
           <div className="form-group" style={{ margin: 0 }}>
-            <label className="form-label">Area</label>
+            <label className="form-label">{t('area')}</label>
             <input className="form-control" placeholder="Zamalek, Maadi..." value={filters.area} onChange={e => setFilters(f => ({ ...f, area: e.target.value }))} />
           </div>
           <div className="form-group" style={{ margin: 0 }}>
-            <label className="form-label">Min Capacity</label>
+            <label className="form-label">{t('minCapacity')}</label>
             <input type="number" className="form-control" value={filters.minCapacity} onChange={e => setFilters(f => ({ ...f, minCapacity: e.target.value }))} />
           </div>
           <div className="form-group" style={{ margin: 0 }}>
-            <label className="form-label">Max Price/Day (EGP)</label>
+            <label className="form-label">{t('maxPriceDay')} (EGP)</label>
             <input type="number" className="form-control" value={filters.maxPrice} onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} />
           </div>
           <div className="form-group" style={{ margin: 0 }}>
-            <label className="form-label">Event Date</label>
+            <label className="form-label">{t('eventDateLabel')}</label>
             <input type="date" className="form-control" value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-primary" onClick={handleSearch}>Search Venues</button>
+          <button className="btn btn-primary" onClick={handleSearch}>{t('searchVenues')}</button>
           {dateFilter && <button className="btn btn-ghost btn-sm" onClick={() => setDateFilter('')}>Clear Date</button>}
         </div>
       </div>
@@ -125,7 +127,7 @@ const VenueSearch = () => {
                   {v.amenities?.length > 4 && <span className="chip">+{v.amenities.length - 4}</span>}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-primary btn-sm" onClick={() => setBookingModal(v)}>Request Booking</button>
+                  <button className="btn btn-primary btn-sm" onClick={() => setBookingModal(v)}>{t('bookVenue')}</button>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>
                     ⭐ {v.rating?.toFixed(1)} ({v.reviewCount} reviews)
                   </div>
@@ -137,27 +139,27 @@ const VenueSearch = () => {
       )}
 
       <Modal isOpen={Boolean(bookingModal)} onClose={() => setBookingModal(null)} title={`Book: ${bookingModal?.name}`}
-        footer={<><button className="btn btn-ghost" onClick={() => setBookingModal(null)}>Cancel</button><button className="btn btn-primary" onClick={handleBook} disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Request'}</button></>}>
+        footer={<><button className="btn btn-ghost" onClick={() => setBookingModal(null)}>{t('cancel')}</button><button className="btn btn-primary" onClick={handleBook} disabled={submitting}>{submitting ? 'Submitting...' : t('submitBooking')}</button></>}>
         {bookingModal && (
           <div>
             <div className="alert alert-info mb-4">Price: {bookingModal.pricing?.perDay?.toLocaleString()} EGP/day · Capacity: {bookingModal.capacity} guests</div>
             <div className="form-group">
-              <label className="form-label">Link to Event (optional)</label>
+              <label className="form-label">{t('selectEvent')}</label>
               <select className="form-control" value={bookingForm.event} onChange={e => setBookingForm(f => ({ ...f, event: e.target.value }))}>
                 <option value="">Select event...</option>
                 {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Event Date *</label>
+              <label className="form-label">{t('eventDateLabel')} *</label>
               <input type="date" className="form-control" value={bookingForm.date} onChange={e => setBookingForm(f => ({ ...f, date: e.target.value }))} />
             </div>
             <div className="form-group">
-              <label className="form-label">Expected Attendees *</label>
+              <label className="form-label">{t('attendeesCount')} *</label>
               <input type="number" className="form-control" value={bookingForm.expectedAttendees} onChange={e => setBookingForm(f => ({ ...f, expectedAttendees: e.target.value }))} />
             </div>
             <div className="form-group">
-              <label className="form-label">Special Requirements</label>
+              <label className="form-label">{t('specialReqs')}</label>
               <textarea className="form-control" rows={3} value={bookingForm.specialRequirements} onChange={e => setBookingForm(f => ({ ...f, specialRequirements: e.target.value }))} placeholder="Any special setup, timing, or requirements..." />
             </div>
           </div>

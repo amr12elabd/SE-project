@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { feedbackAPI, eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -7,6 +8,7 @@ import { useToast } from '../../components/Toast';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 const FeedbackReview = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [data, setData] = useState({ feedbacks: [], stats: {} });
@@ -57,21 +59,21 @@ const FeedbackReview = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Feedback Review</h1>
+        <h1>{t('feedback')}</h1>
         <select className="form-control" style={{ width: 220 }} value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)}>
           {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
         </select>
       </div>
 
       <div className="grid-4 mb-6">
-        <DashboardCard icon="📝" label="Total Responses" value={stats.total || 0} color="#1a6b5c" />
-        <DashboardCard icon="⭐" label="Avg Overall Rating" value={(stats.avgOverall || 0).toFixed(1) + '/5'} color="#dd6b20" />
-        <DashboardCard icon="😊" label="Positive Feedback" value={stats.sentimentCount?.Positive || 0} color="#38a169" />
-        <DashboardCard icon="😞" label="Negative Feedback" value={stats.sentimentCount?.Negative || 0} color="#e53e3e" />
+        <DashboardCard icon="📝" label={t('totalResponses')} value={stats.total || 0} color="#1a6b5c" />
+        <DashboardCard icon="⭐" label={t('avgRating')} value={(stats.avgOverall || 0).toFixed(1) + '/5'} color="#dd6b20" />
+        <DashboardCard icon="😊" label={t('positive')} value={stats.sentimentCount?.Positive || 0} color="#38a169" />
+        <DashboardCard icon="😞" label={t('negative')} value={stats.sentimentCount?.Negative || 0} color="#e53e3e" />
       </div>
 
       {feedbacks.length === 0 ? (
-        <div className="empty-state"><div className="empty-state-icon">⭐</div><h3>No feedback yet</h3><p>Feedback from guests will appear here after the event.</p></div>
+        <div className="empty-state"><div className="empty-state-icon">⭐</div><h3>{t('noFeedback')}</h3></div>
       ) : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>

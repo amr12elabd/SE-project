@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { sourcingAPI, eventsAPI, vendorsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const SourcingRequests = () => {
+  const { t } = useLang();
   const [requests, setRequests] = useState([]);
   const [events, setEvents] = useState([]);
   const [vendors, setVendors] = useState([]);
@@ -63,8 +65,8 @@ const SourcingRequests = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Sourcing Requests</h1>
-        <button className="btn btn-primary" onClick={() => setModal(true)}>+ New Request</button>
+        <h1>{t('sourcing')}</h1>
+        <button className="btn btn-primary" onClick={() => setModal(true)}>+ {t('createRequest')}</button>
       </div>
 
       <div className="filter-bar">
@@ -80,7 +82,7 @@ const SourcingRequests = () => {
       </div>
 
       {requests.length === 0 ? (
-        <div className="card"><div className="empty-state"><div className="empty-state-icon">📦</div><h3>No sourcing requests</h3></div></div>
+        <div className="card"><div className="empty-state"><div className="empty-state-icon">📦</div><h3>{t('noSourcingRequests')}</h3></div></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {requests.map(r => (
@@ -142,8 +144,8 @@ const SourcingRequests = () => {
         </div>
       )}
 
-      <Modal isOpen={modal} onClose={() => setModal(false)} title="Create Sourcing Request" size="lg"
-        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleCreate} disabled={saving}>{saving ? 'Creating...' : 'Create Request'}</button></>}>
+      <Modal isOpen={modal} onClose={() => setModal(false)} title={t('createRequest')} size="lg"
+        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>{t('cancel')}</button><button className="btn btn-primary" onClick={handleCreate} disabled={saving}>{saving ? 'Creating...' : t('create')}</button></>}>
         <form onSubmit={handleCreate}>
           <div className="form-row">
             <div className="form-group">
@@ -162,18 +164,18 @@ const SourcingRequests = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Delivery Date *</label>
+              <label className="form-label">{t('deliveryDate')} *</label>
               <input type="date" className="form-control" value={form.deliveryDate} onChange={e => setForm(f => ({ ...f, deliveryDate: e.target.value }))} />
             </div>
             <div className="form-group">
-              <label className="form-label">Event Location</label>
+              <label className="form-label">{t('eventLocation')}</label>
               <input className="form-control" placeholder="Delivery address" value={form.eventLocation} onChange={e => setForm(f => ({ ...f, eventLocation: e.target.value }))} />
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <label className="form-label" style={{ margin: 0 }}>Requested Items *</label>
-            <button type="button" className="btn btn-outline btn-sm" onClick={addItem}>+ Add Item</button>
+            <label className="form-label" style={{ margin: 0 }}>{t('item')} *</label>
+            <button type="button" className="btn btn-outline btn-sm" onClick={addItem}>+ {t('addItemRow')}</button>
           </div>
           {form.items.map((item, idx) => (
             <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>

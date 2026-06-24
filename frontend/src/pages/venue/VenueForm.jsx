@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { venuesAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const AvailabilityCalendar = ({ venueId }) => {
+  const { t } = useLang();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [unavailable, setUnavailable] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -44,8 +46,8 @@ const AvailabilityCalendar = ({ venueId }) => {
 
   return (
     <div className="card card-body mb-4">
-      <h3 className="mb-2">Availability Calendar</h3>
-      <p className="text-muted text-sm mb-4">Click a date to mark it as unavailable (red) or available (white). Past dates cannot be changed.</p>
+      <h3 className="mb-2">{t('availabilityCalendar')}</h3>
+      <p className="text-muted text-sm mb-4">Click a date to {t('markUnavailable').toLowerCase()} (red) or {t('markAvailable').toLowerCase()} (white). Past dates cannot be changed.</p>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <button className="btn btn-ghost btn-sm" onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>← Prev</button>
         <strong>{currentDate.toLocaleString('en', { month: 'long', year: 'numeric' })}</strong>
@@ -71,8 +73,8 @@ const AvailabilityCalendar = ({ venueId }) => {
         })}
       </div>
       <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-muted)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 3 }} /> Unavailable</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, background: '#fff', border: '1px solid var(--border)', borderRadius: 3 }} /> Available</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 3 }} /> {t('unavailable')}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 14, height: 14, background: '#fff', border: '1px solid var(--border)', borderRadius: 3 }} /> {t('available')}</div>
       </div>
     </div>
   );
@@ -92,6 +94,7 @@ const EMPTY_FORM = {
 const VenueForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLang();
   const toast = useToast();
   const isEdit = Boolean(id);
   const [loading, setLoading] = useState(isEdit);
@@ -145,48 +148,48 @@ const VenueForm = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>{isEdit ? '✏️ Edit Venue' : '+ Add New Venue'}</h1>
+        <h1>{isEdit ? '✏️ Edit Venue' : t('addNewVenue')}</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="card card-body mb-4">
-          <h3 className="mb-4">Basic Information</h3>
+          <h3 className="mb-4">{t('basicInfo')}</h3>
           <div className="form-grid">
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="form-label">Venue Name *</label>
+              <label className="form-label">{t('venueName')} *</label>
               <input type="text" className="form-control" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. The Grand Ballroom" />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="form-label">Description</label>
+              <label className="form-label">{t('venueDescription')}</label>
               <textarea className="form-control" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe what makes your venue special..." />
             </div>
             <div className="form-group">
-              <label className="form-label">Capacity (persons) *</label>
+              <label className="form-label">{t('capacityLabel')} *</label>
               <input type="number" className="form-control" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} required min={1} />
             </div>
             <div className="form-group">
-              <label className="form-label">Dimensions (e.g. 500 sqm)</label>
+              <label className="form-label">{t('dimensions')}</label>
               <input type="text" className="form-control" value={form.dimensions} onChange={e => setForm(f => ({ ...f, dimensions: e.target.value }))} placeholder="500 sqm" />
             </div>
           </div>
         </div>
 
         <div className="card card-body mb-4">
-          <h3 className="mb-4">Location</h3>
+          <h3 className="mb-4">{t('location')}</h3>
           <div className="form-grid">
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="form-label">Street Address</label>
+              <label className="form-label">{t('address')}</label>
               <input type="text" className="form-control" value={form.location.address} onChange={e => setForm(f => ({ ...f, location: { ...f.location, address: e.target.value } }))} placeholder="123 Nile Corniche St" />
             </div>
             <div className="form-group">
-              <label className="form-label">Area</label>
+              <label className="form-label">{t('area')}</label>
               <select className="form-control" value={form.location.area} onChange={e => setForm(f => ({ ...f, location: { ...f.location, area: e.target.value } }))}>
                 <option value="">Select area...</option>
                 {CAIRO_AREAS.map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">City</label>
+              <label className="form-label">{t('city')}</label>
               <input type="text" className="form-control" value={form.location.city} onChange={e => setForm(f => ({ ...f, location: { ...f.location, city: e.target.value } }))} />
             </div>
           </div>
@@ -196,18 +199,18 @@ const VenueForm = () => {
           <h3 className="mb-4">Pricing</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label">Price per Day (EGP)</label>
+              <label className="form-label">{t('pricePerDay')}</label>
               <input type="number" className="form-control" value={form.pricing.perDay} onChange={e => setForm(f => ({ ...f, pricing: { ...f.pricing, perDay: e.target.value } }))} min={0} />
             </div>
             <div className="form-group">
-              <label className="form-label">Price per Hour (EGP)</label>
+              <label className="form-label">{t('pricePerHour')}</label>
               <input type="number" className="form-control" value={form.pricing.perHour} onChange={e => setForm(f => ({ ...f, pricing: { ...f.pricing, perHour: e.target.value } }))} min={0} />
             </div>
           </div>
         </div>
 
         <div className="card card-body mb-4">
-          <h3 className="mb-3">Amenities</h3>
+          <h3 className="mb-3">{t('amenities')}</h3>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {AMENITIES.map(a => (
               <button key={a} type="button"
@@ -223,9 +226,9 @@ const VenueForm = () => {
         {isEdit && <AvailabilityCalendar venueId={id} />}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          <button type="button" className="btn btn-ghost" onClick={() => navigate('/venue/listings')}>Cancel</button>
+          <button type="button" className="btn btn-ghost" onClick={() => navigate('/venue/listings')}>{t('cancel')}</button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Saving...' : isEdit ? 'Update Venue' : 'Create Venue'}
+            {saving ? 'Saving...' : isEdit ? t('update') + ' Venue' : t('create') + ' Venue'}
           </button>
         </div>
       </form>

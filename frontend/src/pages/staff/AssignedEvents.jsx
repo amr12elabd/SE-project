@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { eventsAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { useLang } from '../../context/LanguageContext';
 
 const AssignedEvents = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -30,11 +32,11 @@ const AssignedEvents = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>My Events</h1></div>
+      <div className="page-header"><h1>{t('myEvents')}</h1></div>
       <div className="filter-bar">
         {['', 'upcoming', 'past', 'Confirmed', 'In Progress'].map((f, i) => (
           <button key={i} className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter(f)}>
-            {f === '' ? 'All' : f === 'upcoming' ? 'Upcoming' : f === 'past' ? 'Past' : f}
+            {f === '' ? t('filter') : f === 'upcoming' ? t('upcomingEvents') : f === 'past' ? t('filterByDate') : f}
           </button>
         ))}
       </div>
@@ -59,7 +61,7 @@ const AssignedEvents = () => {
             </div>
           </div>
         ))}
-        {filtered.length === 0 && <div className="empty-state"><div className="empty-state-icon">📅</div><h3>No events found</h3></div>}
+        {filtered.length === 0 && <div className="empty-state"><div className="empty-state-icon">📅</div><h3>{t('noData')}</h3></div>}
       </div>
     </div>
   );

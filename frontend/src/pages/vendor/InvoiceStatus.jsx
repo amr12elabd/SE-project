@@ -3,8 +3,10 @@ import { invoicesAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const InvoiceStatus = () => {
+  const { t } = useLang();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -32,44 +34,44 @@ const InvoiceStatus = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>📊 Invoice Status</h1></div>
+      <div className="page-header"><h1>📊 {t('invoiceStatus')}</h1></div>
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#e8f5f2', color: 'var(--primary)' }}>🧾</div>
-          <div className="stat-info"><div className="stat-value">{invoices.length}</div><div className="stat-label">Total Invoices</div></div>
+          <div className="stat-info"><div className="stat-value">{invoices.length}</div><div className="stat-label">{t('myInvoices')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#fff3e0', color: 'var(--warning)' }}>⏳</div>
-          <div className="stat-info"><div className="stat-value">EGP {totalPending.toLocaleString()}</div><div className="stat-label">Pending Review</div></div>
+          <div className="stat-info"><div className="stat-value">EGP {totalPending.toLocaleString()}</div><div className="stat-label">{t('invoicePending')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>💰</div>
-          <div className="stat-info"><div className="stat-value">EGP {totalPaid.toLocaleString()}</div><div className="stat-label">Total Paid</div></div>
+          <div className="stat-info"><div className="stat-value">EGP {totalPaid.toLocaleString()}</div><div className="stat-label">{t('invoicePaid')}</div></div>
         </div>
       </div>
 
       <div className="filter-bar mb-4">
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="">All Statuses</option>
+          <option value="">{t('allStatuses2')}</option>
           {['Pending Review', 'Approved', 'Rejected', 'Paid'].map(s => <option key={s}>{s}</option>)}
         </select>
         <span className="text-muted text-sm">{filtered.length} invoices</span>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty-state"><div className="empty-state-icon">🧾</div><h3>No invoices found</h3></div>
+        <div className="empty-state"><div className="empty-state-icon">🧾</div><h3>{t('noData')}</h3></div>
       ) : (
         <div className="card">
           <table className="table">
             <thead>
               <tr>
-                <th>Invoice #</th>
-                <th>Event</th>
-                <th>Amount</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t('invoiceNum')}</th>
+                <th>{t('event2')}</th>
+                <th>{t('total')}</th>
+                <th>{t('dueDate2')}</th>
+                <th>{t('status')}</th>
+                <th>{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -81,7 +83,7 @@ const InvoiceStatus = () => {
                   <td>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
                   <td><StatusBadge status={inv.status} /></td>
                   <td>
-                    <button className="btn btn-ghost btn-sm" onClick={() => setSelected(inv)}>👁️ View</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setSelected(inv)}>👁️ {t('view')}</button>
                   </td>
                 </tr>
               ))}
@@ -100,17 +102,17 @@ const InvoiceStatus = () => {
             <div className="modal-body">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
-                  <div className="text-muted text-sm">Event</div>
+                  <div className="text-muted text-sm">{t('event2')}</div>
                   <div style={{ fontWeight: 600 }}>{selected.event?.name}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div className="text-muted text-sm">Status</div>
+                  <div className="text-muted text-sm">{t('status')}</div>
                   <StatusBadge status={selected.status} />
                 </div>
               </div>
 
               <table className="table mb-4">
-                <thead><tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+                <thead><tr><th>{t('description')}</th><th>{t('qty')}</th><th>{t('unitPrice')}</th><th>{t('total')}</th></tr></thead>
                 <tbody>
                   {selected.items?.map((item, i) => (
                     <tr key={i}>
@@ -122,13 +124,13 @@ const InvoiceStatus = () => {
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr><td colSpan={3} style={{ textAlign: 'right', fontWeight: 700 }}>Total:</td><td style={{ fontWeight: 700, color: 'var(--primary)' }}>EGP {selected.totalAmount?.toLocaleString()}</td></tr>
+                  <tr><td colSpan={3} style={{ textAlign: 'right', fontWeight: 700 }}>{t('total')}:</td><td style={{ fontWeight: 700, color: 'var(--primary)' }}>EGP {selected.totalAmount?.toLocaleString()}</td></tr>
                 </tfoot>
               </table>
 
               {selected.notes && (
                 <div style={{ padding: '10px 14px', background: 'var(--bg-secondary)', borderRadius: 8, fontSize: 13 }}>
-                  <strong>Notes:</strong> {selected.notes}
+                  <strong>{t('notes')}:</strong> {selected.notes}
                 </div>
               )}
 
@@ -144,7 +146,7 @@ const InvoiceStatus = () => {
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-ghost" onClick={() => setSelected(null)}>Close</button>
+              <button className="btn btn-ghost" onClick={() => setSelected(null)}>{t('cancel')}</button>
             </div>
           </div>
         </div>

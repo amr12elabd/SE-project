@@ -3,6 +3,7 @@ import { tasksAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const getDeadlineWarning = (dueDate, status) => {
   if (!dueDate || status === 'Done') return null;
@@ -17,6 +18,7 @@ const getDeadlineWarning = (dueDate, status) => {
 const STATUSES = ['Pending', 'In Progress', 'Done'];
 
 const AssignedTasks = () => {
+  const { t } = useLang();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -59,22 +61,22 @@ const AssignedTasks = () => {
     <div>
       <div className="page-header">
         <div>
-          <h1>My Tasks</h1>
-          <p className="text-muted text-sm">{tasks.filter(t => t.status === 'Done').length} completed · {tasks.filter(t => t.status !== 'Done').length} remaining{overdue > 0 ? ` · ⚠️ ${overdue} overdue` : ''}</p>
+          <h1>{t('myTasks')}</h1>
+          <p className="text-muted text-sm">{tasks.filter(tk => tk.status === 'Done').length} {t('completedTasks')} · {tasks.filter(tk => tk.status !== 'Done').length} {t('remainingTasks')}{overdue > 0 ? ` · ⚠️ ${overdue} ${t('overdueAlert')}` : ''}</p>
         </div>
       </div>
-      {overdue > 0 && <div className="alert alert-danger mb-4">🚨 You have <strong>{overdue} overdue task{overdue > 1 ? 's' : ''}</strong>. Please complete or flag them to your organizer immediately.</div>}
+      {overdue > 0 && <div className="alert alert-danger mb-4">🚨 {t('overdueAlert')}: <strong>{overdue}</strong></div>}
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search tasks..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input type="search" className="form-control" placeholder={t('search')} value={search} onChange={e => setSearch(e.target.value)} />
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="">All Statuses</option>
+          <option value="">{t('filterByStatus')}</option>
           {['Pending', 'In Progress', 'Done'].map(s => <option key={s}>{s}</option>)}
         </select>
         <span className="text-muted text-sm">{filtered.length} tasks</span>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty-state"><div className="empty-state-icon">✅</div><h3>No tasks found</h3></div>
+        <div className="empty-state"><div className="empty-state-icon">✅</div><h3>{t('noData')}</h3></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {filtered.map(t => {
@@ -101,7 +103,7 @@ const AssignedTasks = () => {
                   </div>
                 </div>
                 <div style={{ flexShrink: 0 }}>
-                  <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>Status</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>{t('status')}</label>
                   <select
                     className="form-control"
                     value={t.status}

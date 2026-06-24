@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { eventsAPI, guestsAPI, invitationsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const Invitations = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [guests, setGuests] = useState([]);
@@ -66,7 +68,7 @@ const Invitations = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>Invitations</h1></div>
+      <div className="page-header"><h1>{t('invitations')}</h1></div>
 
       <div className="filter-bar">
         <select className="form-control" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)} style={{ width: 250 }}>
@@ -75,21 +77,21 @@ const Invitations = () => {
       </div>
 
       <div className="grid-3 mb-6">
-        <div className="stat-card"><div className="stat-icon" style={{ background: '#ebf8ff', color: 'var(--info)' }}>✉️</div><div className="stat-info"><div className="stat-value" style={{ color: 'var(--info)' }}>{sentCount}</div><div className="stat-label">Invitations Sent</div></div></div>
-        <div className="stat-card"><div className="stat-icon" style={{ background: '#fffaf0', color: 'var(--warning)' }}>👁️</div><div className="stat-info"><div className="stat-value" style={{ color: 'var(--warning)' }}>{viewedCount}</div><div className="stat-label">Viewed</div></div></div>
-        <div className="stat-card"><div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>✅</div><div className="stat-info"><div className="stat-value" style={{ color: 'var(--success)' }}>{respondedCount}</div><div className="stat-label">Responded</div></div></div>
+        <div className="stat-card"><div className="stat-icon" style={{ background: '#ebf8ff', color: 'var(--info)' }}>✉️</div><div className="stat-info"><div className="stat-value" style={{ color: 'var(--info)' }}>{sentCount}</div><div className="stat-label">{t('invitationSent')}</div></div></div>
+        <div className="stat-card"><div className="stat-icon" style={{ background: '#fffaf0', color: 'var(--warning)' }}>👁️</div><div className="stat-info"><div className="stat-value" style={{ color: 'var(--warning)' }}>{viewedCount}</div><div className="stat-label">{t('sent')}</div></div></div>
+        <div className="stat-card"><div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>✅</div><div className="stat-info"><div className="stat-value" style={{ color: 'var(--success)' }}>{respondedCount}</div><div className="stat-label">{t('responded')}</div></div></div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
         {/* Guest List */}
         <div className="card">
           <div className="card-header">
-            <h3>Send Invitations</h3>
+            <h3>{t('sendInvitations')}</h3>
             <button className="btn btn-ghost btn-sm" onClick={selectAll}>Select Uninvited</button>
           </div>
           <div className="card-body">
             <div className="form-group">
-              <label className="form-label">Custom Message (optional)</label>
+              <label className="form-label">{t('yourMessage')}</label>
               <textarea className="form-control" rows={3} placeholder="Add a personal message to the invitation..." value={message} onChange={e => setMessage(e.target.value)} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
@@ -113,7 +115,7 @@ const Invitations = () => {
               {message.trim() && (
                 <button className="btn btn-ghost btn-sm" title="Share invitation via WhatsApp" style={{ color: '#25d366', border: '1px solid #25d366', padding: '0 14px' }}
                   onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited! ${message}`)}`, '_blank')}>
-                  📲 WhatsApp
+                  📲 {t('whatsapp')}
                 </button>
               )}
             </div>
@@ -122,13 +124,13 @@ const Invitations = () => {
 
         {/* Invitation Status */}
         <div className="card">
-          <div className="card-header"><h3>Invitation Status</h3></div>
+          <div className="card-header"><h3>{t('invitationStatus')}</h3></div>
           {invitations.length === 0 ? (
-            <div className="empty-state" style={{ padding: 32 }}><p>No invitations sent yet</p></div>
+            <div className="empty-state" style={{ padding: 32 }}><p>{t('noInvitationsYet')}</p></div>
           ) : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Guest</th><th>RSVP</th><th>Invitation</th></tr></thead>
+                <thead><tr><th>{t('name')}</th><th>{t('status')}</th><th>{t('invitationStatus')}</th></tr></thead>
                 <tbody>
                   {invitations.map(inv => (
                     <tr key={inv._id}>

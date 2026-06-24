@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { reportsAPI, eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import DashboardCard from '../../components/DashboardCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
@@ -7,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieC
 import { exportReportPDF } from '../../utils/exportPDF';
 
 const Reports = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [report, setReport] = useState(null);
@@ -105,20 +107,20 @@ const Reports = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Reports & Analytics</h1>
+        <h1>{t('reports')}</h1>
         <div className="page-actions">
           <select className="form-control" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)} style={{ width: 220 }}>
             {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
           </select>
-          <button className="btn btn-outline" onClick={handleExport} disabled={exporting}>{exporting ? 'Exporting...' : '📤 Export CSV'}</button>
-          {report && <button className="btn btn-primary" onClick={() => exportReportPDF(report, events.find(e => e._id === selectedEvent)?.name)}>📄 Export PDF</button>}
+          <button className="btn btn-outline" onClick={handleExport} disabled={exporting}>{exporting ? 'Exporting...' : '📤 ' + t('exportCSV')}</button>
+          {report && <button className="btn btn-primary" onClick={() => exportReportPDF(report, events.find(e => e._id === selectedEvent)?.name)}>📄 {t('exportPDFReport')}</button>}
         </div>
       </div>
 
       <div className="tabs mb-4">
-        {['full', 'attendance', 'financial', 'tasks', 'feedback', 'compare'].map(t => (
-          <button key={t} className={`tab-btn ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
-            {t === 'full' ? '📊 Overview' : t === 'attendance' ? '👥 Attendance' : t === 'financial' ? '💰 Financial' : t === 'tasks' ? '✅ Tasks' : t === 'feedback' ? '⭐ Feedback' : '🔀 Compare Events'}
+        {['full', 'attendance', 'financial', 'tasks', 'feedback', 'compare'].map(tabKey => (
+          <button key={tabKey} className={`tab-btn ${tab === tabKey ? 'active' : ''}`} onClick={() => setTab(tabKey)}>
+            {tabKey === 'full' ? '📊 ' + t('fullReport') : tabKey === 'attendance' ? '👥 ' + t('attendanceTab') : tabKey === 'financial' ? '💰 ' + t('financialTab') : tabKey === 'tasks' ? '✅ ' + t('tasksTab') : tabKey === 'feedback' ? '⭐ ' + t('feedbackTab') : '🔀 ' + t('compareTab')}
           </button>
         ))}
       </div>
@@ -127,8 +129,8 @@ const Reports = () => {
       {tab === 'compare' && (
         <div className="mb-6">
           <div className="card card-body mb-4">
-            <h3 className="mb-3">Select Events to Compare</h3>
-            <p className="text-muted text-sm mb-4">Pick 2–5 events to see a side-by-side comparison of attendance, budget usage, and feedback.</p>
+            <h3 className="mb-3">{t('selectEvents')}</h3>
+            <p className="text-muted text-sm mb-4">{t('compareDesc')}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {events.map(ev => (
                 <label key={ev._id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 8, border: `2px solid ${compareEvents.includes(ev._id) ? 'var(--primary)' : 'var(--border)'}`, background: compareEvents.includes(ev._id) ? 'var(--primary-light)' : '#fff', cursor: 'pointer', fontSize: 13 }}>
@@ -178,10 +180,10 @@ const Reports = () => {
               </div>
 
               <div className="card">
-                <div className="card-header"><h3>Summary Table</h3></div>
+                <div className="card-header"><h3>{t('compareTab')}</h3></div>
                 <div className="table-wrap">
                   <table>
-                    <thead><tr><th>Event</th><th>Guests</th><th>RSVP %</th><th>Check-In %</th><th>Budget Used</th><th>Avg Rating</th><th>Feedback</th></tr></thead>
+                    <thead><tr><th>{t('events')}</th><th>{t('totalInvited')}</th><th>{t('rsvpRate')}</th><th>{t('checkInRate')}</th><th>{t('budgetUsed')}</th><th>{t('avgRating')}</th><th>{t('feedback')}</th></tr></thead>
                     <tbody>
                       {compareReports.map(r => (
                         <tr key={r.eventId}>
@@ -208,7 +210,7 @@ const Reports = () => {
       )}
 
       {tab !== 'compare' && !report ? (
-        <div className="empty-state"><div className="empty-state-icon">📊</div><h3>No data available</h3><p>This event has no report data yet.</p></div>
+        <div className="empty-state"><div className="empty-state-icon">📊</div><h3>{t('noReportData')}</h3></div>
       ) : tab !== 'compare' && (
         <>
           {/* ── OVERVIEW TAB ── */}
@@ -218,14 +220,14 @@ const Reports = () => {
               <div className="card card-body mb-4" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #2d9b87 100%)', color: '#fff' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
                   <div>
-                    <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>Overall Event Health Score</div>
+                    <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>{t('eventHealthScore')}</div>
                     <div style={{ fontSize: 52, fontWeight: 800, lineHeight: 1 }}>{healthScore}<span style={{ fontSize: 24 }}>/100</span></div>
                     <div style={{ fontSize: 13, marginTop: 6, opacity: 0.9 }}>
                       {healthScore >= 80 ? '🌟 Excellent — event is on track' : healthScore >= 60 ? '✅ Good — minor improvements needed' : healthScore >= 40 ? '⚠️ Fair — attention required' : '🚨 Needs immediate attention'}
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    {[['RSVP Rate', rsvpRate], ['Check-In Rate', checkInRate], ['Task Completion', taskCompRate], ['Budget Utilization', budgetUtil]].map(([label, val]) => (
+                    {[[t('rsvpRate'), rsvpRate], [t('checkInRate'), checkInRate], [t('taskCompletion'), taskCompRate], [t('budgetUtilization'), budgetUtil]].map(([label, val]) => (
                       <div key={label} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 8, padding: '10px 14px', minWidth: 120 }}>
                         <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>{label}</div>
                         <div style={{ fontSize: 22, fontWeight: 700 }}>{val}%</div>
@@ -270,7 +272,7 @@ const Reports = () => {
             <div className="mb-6">
               <h2 className="section-title">Attendance Report</h2>
               <div className="grid-4 mb-4">
-                <DashboardCard icon="👥" label="Total Invited" value={report.attendance.total} color="#3182ce" />
+                <DashboardCard icon="👥" label={t('totalInvited')} value={report.attendance.total} color="#3182ce" />
                 <DashboardCard icon="✅" label="Attending" value={report.attendance.attending} color="#38a169" sub={`${rsvpRate}% RSVP rate`} />
                 <DashboardCard icon="🎟️" label="Checked In" value={report.attendance.checkedIn} color="#7c3aed" sub={`${checkInRate}% check-in rate`} />
                 <DashboardCard icon="❌" label="Not Attending" value={report.attendance.notAttending || 0} color="#e53e3e" />

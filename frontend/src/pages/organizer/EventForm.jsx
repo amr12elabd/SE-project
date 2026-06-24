@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { eventsAPI, venuesAPI, usersAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import api from '../../api/axios';
 import { useToast } from '../../components/Toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const EventForm = () => {
+  const { t } = useLang();
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -113,7 +115,7 @@ const EventForm = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>{isEdit ? 'Edit Event' : 'Create New Event'}</h1>
+        <h1>{isEdit ? t('editEvent') : t('createEvent')}</h1>
         <button className="btn btn-ghost" onClick={() => navigate(isEdit ? `/events/${id}` : '/events')}>← Back</button>
       </div>
 
@@ -121,14 +123,14 @@ const EventForm = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, alignItems: 'start' }}>
           <div>
             <div className="card card-body mb-4">
-              <h3 className="mb-4">Basic Information</h3>
+              <h3 className="mb-4">{t('basicInfo')}</h3>
               <div className="form-group">
-                <label className="form-label">Event Name *</label>
+                <label className="form-label">{t('eventName')} *</label>
                 <input className="form-control" placeholder="e.g. Cairo Autumn Brew Café" value={form.name} onChange={set('name')} />
               </div>
               <div className="form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <label className="form-label" style={{ margin: 0 }}>Description</label>
+                  <label className="form-label" style={{ margin: 0 }}>{t('description')}</label>
                   <button type="button" className="btn btn-ghost btn-sm" style={{ fontSize: 12, color: 'var(--primary)', border: '1px solid var(--primary)' }} onClick={() => generateWithAI('description')} disabled={aiLoading === 'description'}>
                     {aiLoading === 'description' ? '⏳ Generating...' : '✨ AI Generate'}
                   </button>
@@ -137,27 +139,27 @@ const EventForm = () => {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Event Date *</label>
+                  <label className="form-label">{t('eventDate')} *</label>
                   <input type="date" className="form-control" value={form.date} onChange={set('date')} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Event Type</label>
+                  <label className="form-label">{t('eventType')}</label>
                   <input className="form-control" value={form.eventType} onChange={set('eventType')} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Start Time</label>
+                  <label className="form-label">{t('startTime')}</label>
                   <input type="time" className="form-control" value={form.startTime} onChange={set('startTime')} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">End Time</label>
+                  <label className="form-label">{t('endTime')}</label>
                   <input type="time" className="form-control" value={form.endTime} onChange={set('endTime')} />
                 </div>
               </div>
               <div className="form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <label className="form-label" style={{ margin: 0 }}>Agenda</label>
+                  <label className="form-label" style={{ margin: 0 }}>{t('agenda')}</label>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button type="button" className="btn btn-ghost btn-sm" style={{ fontSize: 12, color: 'var(--primary)', border: '1px solid var(--primary)' }} onClick={() => generateWithAI('agenda')} disabled={aiLoading === 'agenda'}>
                       {aiLoading === 'agenda' ? '⏳ Generating...' : '✨ AI Generate'}
@@ -172,7 +174,7 @@ const EventForm = () => {
             </div>
 
             <div className="card card-body mb-4">
-              <h3 className="mb-4">Staff Assignment</h3>
+              <h3 className="mb-4">{t('staffAssignment')}</h3>
               {staff.length === 0 ? <p className="text-muted text-sm">No staff members found. Create staff accounts first.</p> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {staff.map(s => (
@@ -201,17 +203,17 @@ const EventForm = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Expected Guests</label>
+                <label className="form-label">{t('expectedGuests')}</label>
                 <input type="number" className="form-control" min={0} value={form.expectedGuests} onChange={set('expectedGuests')} />
               </div>
               <div className="form-group">
-                <label className="form-label">Dress Code</label>
+                <label className="form-label">{t('dressCode')}</label>
                 <select className="form-control" value={form.dressCode} onChange={set('dressCode')}>
                   {['Casual', 'Smart Casual', 'Business Casual', 'Cocktail', 'Formal'].map(d => <option key={d}>{d}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Total Budget (EGP)</label>
+                <label className="form-label">{t('totalBudget')} (EGP)</label>
                 <input type="number" className="form-control" min={0} value={form.totalBudget} onChange={set('totalBudget')} />
               </div>
               {isEdit && (
@@ -226,7 +228,7 @@ const EventForm = () => {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
-                {saving ? 'Saving...' : isEdit ? 'Update Event' : 'Create Event'}
+                {saving ? 'Saving...' : isEdit ? t('update') : t('create')}
               </button>
             </div>
           </div>

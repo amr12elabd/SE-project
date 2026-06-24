@@ -3,8 +3,10 @@ import { sourcingAPI, eventsAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const VendorArrival = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [requests, setRequests] = useState([]);
@@ -61,7 +63,7 @@ const VendorArrival = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>🚚 Vendor Arrivals</h1></div>
+      <div className="page-header"><h1>🚚 {t('vendorArrivals')}</h1></div>
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
         <select className="form-control" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)} style={{ width: 220 }}>
@@ -72,22 +74,22 @@ const VendorArrival = () => {
       <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#e8f5f2', color: 'var(--primary)' }}>📦</div>
-          <div className="stat-info"><div className="stat-value">{activeRequests.length}</div><div className="stat-label">Expected Vendors</div></div>
+          <div className="stat-info"><div className="stat-value">{activeRequests.length}</div><div className="stat-label">{t('expectedVendors')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#fff3e0', color: 'var(--secondary)' }}>🚛</div>
-          <div className="stat-info"><div className="stat-value">{outForDelivery}</div><div className="stat-label">En Route</div></div>
+          <div className="stat-info"><div className="stat-value">{outForDelivery}</div><div className="stat-label">{t('enRoute')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>🎉</div>
-          <div className="stat-info"><div className="stat-value">{delivered}</div><div className="stat-label">Arrived</div></div>
+          <div className="stat-info"><div className="stat-value">{delivered}</div><div className="stat-label">{t('arrived')}</div></div>
         </div>
       </div>
 
       <div className="card">
-        <div className="card-header"><h3>Vendor Delivery Tracking</h3></div>
+        <div className="card-header"><h3>{t('vendorArrivals')}</h3></div>
         {activeRequests.length === 0 ? (
-          <div className="empty-state" style={{ padding: 32 }}><div style={{ fontSize: 40 }}>🚚</div><p>No vendor deliveries for this event</p></div>
+          <div className="empty-state" style={{ padding: 32 }}><div style={{ fontSize: 40 }}>🚚</div><p>{t('noData')}</p></div>
         ) : (
           <div>
             {activeRequests.map(r => (
@@ -115,7 +117,7 @@ const VendorArrival = () => {
                       </div>
                     )}
                     <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Delivery Progress:</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('delivery')}:</span>
                       {['Accepted', 'Preparing', 'Out for Delivery', 'Delivered'].map((step, i) => {
                         const steps = ['Accepted', 'Preparing', 'Out for Delivery', 'Delivered'];
                         const currentIdx = steps.indexOf(r.status);
@@ -135,14 +137,14 @@ const VendorArrival = () => {
                   <div style={{ flexShrink: 0 }}>
                     {r.status === 'Out for Delivery' && (
                       <button className="btn btn-primary btn-sm" onClick={() => markArrived(r._id)}>
-                        ✓ Mark Arrived
+                        ✓ {t('markArrived')}
                       </button>
                     )}
                     {r.status === 'Delivered' && (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                        <span className="badge badge-success">✓ Arrived</span>
+                        <span className="badge badge-success">✓ {t('arrived')}</span>
                         <button className="btn btn-ghost btn-sm" style={{ fontSize: 11, color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => undoArrived(r._id)}>
-                          ↩ Undo
+                          ↩ {t('undoArrived')}
                         </button>
                       </div>
                     )}

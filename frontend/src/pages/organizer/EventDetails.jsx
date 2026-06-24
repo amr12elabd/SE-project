@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import StatusBadge from '../../components/StatusBadge';
 import DashboardCard from '../../components/DashboardCard';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const EventDetails = () => {
+  const { t } = useLang();
   const { id } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
@@ -62,14 +64,14 @@ const EventDetails = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)' }} title="Export to Google Calendar / Apple Calendar" onClick={() => {
+          <button className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)' }} title={t('addToCalendar')} onClick={() => {
             const d = new Date(event.date);
             const fmt = (dt, t) => { const [h, m] = (t || '00:00').split(':'); const nd = new Date(dt); nd.setHours(+h, +m); return nd.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'; };
             const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PopEyez//EN', 'BEGIN:VEVENT', `DTSTART:${fmt(d, event.startTime)}`, `DTEND:${fmt(d, event.endTime)}`, `SUMMARY:${event.name}`, `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`, `LOCATION:${event.venue?.name || ''}, ${event.venue?.location?.area || 'Cairo'}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
             const blob = new Blob([ics], { type: 'text/calendar' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${event.name.replace(/\s+/g, '-')}.ics`; a.click();
-          }}>📅 Add to Calendar</button>
-          <button className="btn btn-outline" onClick={() => navigate(`/events/${id}/edit`)}>✏️ Edit Event</button>
+          }}>📅 {t('addToCalendar')}</button>
+          <button className="btn btn-outline" onClick={() => navigate(`/events/${id}/edit`)}>✏️ {t('editEvent')}</button>
         </div>
       </div>
 
@@ -93,11 +95,11 @@ const EventDetails = () => {
 
       {/* Progress bars */}
       <div className="card card-body mb-6">
-        <h3 style={{ marginBottom: 16 }}>Event Readiness</h3>
+        <h3 style={{ marginBottom: 16 }}>{t('eventReadiness')}</h3>
         {[
-          { label: 'Task Completion', pct: taskCompletionPct, color: '#3182ce' },
-          { label: 'RSVP Rate', pct: rsvpRate, color: '#38a169' },
-          { label: 'Budget Utilization', pct: Math.min(100, budgetPct), color: budgetPct > 80 ? '#dd6b20' : '#1a6b5c' },
+          { label: t('taskCompletion'), pct: taskCompletionPct, color: '#3182ce' },
+          { label: t('rsvpRate'), pct: rsvpRate, color: '#38a169' },
+          { label: t('budgetUtilization'), pct: Math.min(100, budgetPct), color: budgetPct > 80 ? '#dd6b20' : '#1a6b5c' },
         ].map(item => (
           <div key={item.label} style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 5 }}>

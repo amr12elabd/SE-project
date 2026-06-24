@@ -4,11 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { useLang } from '../../context/LanguageContext';
 
 const SUPPLY_CATEGORIES = ['Food & Beverages', 'Audio & Visual', 'Décor & Flowers', 'Furniture & Tents', 'Catering Equipment', 'Photography', 'Entertainment', 'Transportation', 'Cleaning Services', 'Security'];
 const CAIRO_AREAS = ['Maadi', 'Zamalek', 'Heliopolis', 'Nasr City', 'New Cairo', 'October City', 'Downtown', 'Dokki', 'Mohandessin', 'Sheikh Zayed'];
 
 const VendorProfile = () => {
+  const { t } = useLang();
   const { user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
@@ -99,12 +101,12 @@ const VendorProfile = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>👤 Vendor Profile</h1></div>
+      <div className="page-header"><h1>👤 {t('profile')}</h1></div>
 
       {/* Ratings Summary */}
       {ratings.length > 0 && (
         <div className="card card-body mb-4">
-          <h3 className="mb-4">⭐ My Ratings & Reviews</h3>
+          <h3 className="mb-4">⭐ {t('vendorDashboard')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 56, fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}>{avgRating}</div>
@@ -141,39 +143,39 @@ const VendorProfile = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="card card-body mb-4">
-          <h3 className="mb-4">Company Information</h3>
+          <h3 className="mb-4">{t('name')}</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label">Company Name *</label>
+              <label className="form-label">{t('name')} *</label>
               <input type="text" className="form-control" value={form.companyName} onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} required />
             </div>
             <div className="form-group">
-              <label className="form-label">Main Location</label>
+              <label className="form-label">{t('eventLocation')}</label>
               <select className="form-control" value={form.mainLocation} onChange={e => setForm(f => ({ ...f, mainLocation: e.target.value }))}>
                 <option value="">Select area...</option>
                 {CAIRO_AREAS.map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Minimum Order (EGP)</label>
+              <label className="form-label">{t('estimatedCost')}</label>
               <input type="number" className="form-control" value={form.minimumOrder} onChange={e => setForm(f => ({ ...f, minimumOrder: e.target.value }))} min={0} />
             </div>
             <div className="form-group">
-              <label className="form-label">Lead Time (days)</label>
+              <label className="form-label">{t('deliveryDate')}</label>
               <input type="number" className="form-control" value={form.leadTime} onChange={e => setForm(f => ({ ...f, leadTime: e.target.value }))} min={0} />
             </div>
           </div>
         </div>
 
         <div className="card card-body mb-4">
-          <h3 className="mb-4">Contact Information</h3>
+          <h3 className="mb-4">{t('phone')}</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label">Phone</label>
+              <label className="form-label">{t('phone')}</label>
               <input type="tel" className="form-control" value={form.contactInfo.phone} onChange={e => setForm(f => ({ ...f, contactInfo: { ...f.contactInfo, phone: e.target.value } }))} />
             </div>
             <div className="form-group">
-              <label className="form-label">Business Email</label>
+              <label className="form-label">{t('email')}</label>
               <input type="email" className="form-control" value={form.contactInfo.email} onChange={e => setForm(f => ({ ...f, contactInfo: { ...f.contactInfo, email: e.target.value } }))} />
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
@@ -184,7 +186,7 @@ const VendorProfile = () => {
         </div>
 
         <div className="card card-body mb-4">
-          <h3 className="mb-3">Supplies Offered</h3>
+          <h3 className="mb-3">{t('sourcing')}</h3>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {SUPPLY_CATEGORIES.map(cat => (
               <button key={cat} type="button"
@@ -239,7 +241,7 @@ const VendorProfile = () => {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Saving...' : 'Save Profile'}
+            {saving ? t('loading') : t('save')}
           </button>
         </div>
       </form>

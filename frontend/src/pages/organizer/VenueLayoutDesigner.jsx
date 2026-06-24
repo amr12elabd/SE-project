@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { layoutAPI, eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import { useToast } from '../../components/Toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -17,6 +18,7 @@ const ELEMENT_TYPES = [
 let idCounter = 100;
 
 const VenueLayoutDesigner = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [elements, setElements] = useState([]);
@@ -162,17 +164,17 @@ const VenueLayoutDesigner = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Venue Layout Designer</h1>
+        <h1>{t('layout')}</h1>
         <div className="page-actions">
           <select className="form-control" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)} style={{ width: 200 }}>
             {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
           </select>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
             <input type="checkbox" checked={sharedWithStaff} onChange={e => setSharedWithStaff(e.target.checked)} />
-            Share with Staff
+            {t('shareWithStaff')}
           </label>
-          <button className="btn btn-outline" onClick={handleExportImage} disabled={elements.length === 0}>🖼️ Export PNG</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : '💾 Save Layout'}</button>
+          <button className="btn btn-outline" onClick={handleExportImage} disabled={elements.length === 0}>🖼️ {t('exportPNG')}</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : '💾 ' + t('saveLayout')}</button>
         </div>
       </div>
 
@@ -180,7 +182,7 @@ const VenueLayoutDesigner = () => {
         {/* Toolbar */}
         <div>
           <div className="card card-body">
-            <h4 className="mb-3">Add Elements</h4>
+            <h4 className="mb-3">{t('addElement')}</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ELEMENT_TYPES.map(type => (
                 <button key={type.type} className="element-btn" onClick={() => addElement(type.type)}>
@@ -222,7 +224,7 @@ const VenueLayoutDesigner = () => {
             {selectedEl ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Label</label>
+                  <label className="form-label">{t('elementLabel')}</label>
                   <input className="form-control" value={selectedEl.label} onChange={e => updateSelected('label', e.target.value)} />
                 </div>
                 <div className="form-row">
@@ -241,15 +243,15 @@ const VenueLayoutDesigner = () => {
                 </div>
                 {selectedEl.type === 'table' && (
                   <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label">Seats</label>
+                    <label className="form-label">{t('seats')}</label>
                     <input type="number" className="form-control" value={selectedEl.seats} min={0} max={20} onChange={e => updateSelected('seats', Number(e.target.value))} />
                   </div>
                 )}
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Color</label>
+                  <label className="form-label">{t('elementColor')}</label>
                   <input type="color" className="form-control" style={{ height: 40 }} value={selectedEl.color} onChange={e => updateSelected('color', e.target.value)} />
                 </div>
-                <button className="btn btn-danger btn-sm" onClick={deleteSelected}>🗑️ Delete Element</button>
+                <button className="btn btn-danger btn-sm" onClick={deleteSelected}>🗑️ {t('deleteElement')}</button>
               </div>
             ) : (
               <p className="text-muted text-sm">Select an element to edit its properties</p>
@@ -257,7 +259,7 @@ const VenueLayoutDesigner = () => {
           </div>
 
           <div className="card card-body mt-3">
-            <h4 className="mb-3">Setup Instructions</h4>
+            <h4 className="mb-3">{t('setupInstructions')}</h4>
             <textarea className="form-control" rows={6} placeholder="Setup order, important notes for staff..." value={setupInstructions} onChange={e => setSetupInstructions(e.target.value)} />
           </div>
         </div>

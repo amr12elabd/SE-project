@@ -3,8 +3,10 @@ import { vendorsAPI } from '../../api';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const ProductCatalogue = () => {
+  const { t } = useLang();
   const navigate = useNavigate();
   const toast = useToast();
   const [profile, setProfile] = useState(null);
@@ -65,17 +67,17 @@ const ProductCatalogue = () => {
   if (!profile) return (
     <div className="empty-state" style={{ paddingTop: 80 }}>
       <div className="empty-state-icon">📦</div>
-      <h3>No Vendor Profile Yet</h3>
-      <p>Set up your vendor profile first to manage your product catalogue.</p>
-      <button className="btn btn-primary mt-4" onClick={() => navigate('/vendor/profile')}>Go to Profile</button>
+      <h3>{t('noData')}</h3>
+      <p>{t('catalogue')}</p>
+      <button className="btn btn-primary mt-4" onClick={() => navigate('/vendor/profile')}>{t('profile')}</button>
     </div>
   );
 
   return (
     <div>
       <div className="page-header">
-        <h1>📦 Product Catalogue</h1>
-        <button className="btn btn-primary" onClick={addItem}>+ Add Item</button>
+        <h1>📦 {t('catalogue')}</h1>
+        <button className="btn btn-primary" onClick={addItem}>+ {t('add')}</button>
       </div>
 
       <div className="card card-body mb-4" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
@@ -91,9 +93,9 @@ const ProductCatalogue = () => {
       {pricingList.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">📋</div>
-          <h3>No items in catalogue</h3>
-          <p>Add items to showcase what you offer to event organizers.</p>
-          <button className="btn btn-primary mt-4" onClick={addItem}>Add First Item</button>
+          <h3>{t('noData')}</h3>
+          <p>{t('catalogue')}</p>
+          <button className="btn btn-primary mt-4" onClick={addItem}>{t('add')}</button>
         </div>
       ) : (
         <div className="card">
@@ -101,10 +103,10 @@ const ProductCatalogue = () => {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Item / Service</th>
-                <th>Price (EGP)</th>
-                <th>Unit</th>
-                <th>Actions</th>
+                <th>{t('item')}</th>
+                <th>{t('unitPrice')}</th>
+                <th>{t('unit')}</th>
+                <th>{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -121,8 +123,8 @@ const ProductCatalogue = () => {
                         </select>
                       </td>
                       <td>
-                        <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={saving}>Save</button>
-                        <button className="btn btn-ghost btn-sm ml-2" onClick={() => setEditIdx(null)}>Cancel</button>
+                        <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={saving}>{t('save')}</button>
+                        <button className="btn btn-ghost btn-sm ml-2" onClick={() => setEditIdx(null)}>{t('cancel')}</button>
                       </td>
                     </>
                   ) : (
@@ -132,8 +134,8 @@ const ProductCatalogue = () => {
                       <td>EGP {Number(item.price).toLocaleString()}</td>
                       <td><span className="chip">{item.unit}</span></td>
                       <td>
-                        <button className="btn btn-ghost btn-sm" onClick={() => startEdit(i)}>✏️ Edit</button>
-                        <button className="btn btn-danger btn-sm ml-2" onClick={() => deleteItem(i)}>🗑️</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => startEdit(i)}>✏️ {t('edit')}</button>
+                        <button className="btn btn-danger btn-sm ml-2" onClick={() => deleteItem(i)}>🗑️ {t('delete')}</button>
                       </td>
                     </>
                   )}

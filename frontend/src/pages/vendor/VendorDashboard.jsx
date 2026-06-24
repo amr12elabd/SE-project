@@ -6,8 +6,10 @@ import DashboardCard from '../../components/DashboardCard';
 import OnboardingTour from '../../components/OnboardingTour';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { useLang } from '../../context/LanguageContext';
 
 const VendorDashboard = () => {
+  const { t } = useLang();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [sourcing, setSourcing] = useState([]);
@@ -54,7 +56,7 @@ const VendorDashboard = () => {
         <div>
           <h1>Welcome, {user?.name?.split(' ')[0]}! 🏪</h1>
           <p className="text-muted text-sm">
-            {profile ? profile.companyName : 'Vendor Dashboard'} · {new Date().toLocaleDateString('en-EG', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {profile ? profile.companyName : t('vendorDashboard')} · {new Date().toLocaleDateString('en-EG', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
         </div>
         {!profile && (
@@ -71,20 +73,20 @@ const VendorDashboard = () => {
       )}
 
       <div className="grid-4 mb-6">
-        <DashboardCard icon="📥" label="New Requests" value={pending} color="#dd6b20" />
-        <DashboardCard icon="🚛" label="Active Orders" value={active} color="#2563eb" />
-        <DashboardCard icon="🧾" label="Pending Invoices" value={pendingInvoices} color="#805ad5" />
-        <DashboardCard icon="💰" label="Total Earned (EGP)" value={totalEarned.toLocaleString()} color="#38a169" />
+        <DashboardCard icon="📥" label={t('incomingSourcing')} value={pending} color="#dd6b20" />
+        <DashboardCard icon="🚛" label={t('deliveryTracking')} value={active} color="#2563eb" />
+        <DashboardCard icon="🧾" label={t('myInvoices')} value={pendingInvoices} color="#805ad5" />
+        <DashboardCard icon="💰" label={t('totalAmount')} value={totalEarned.toLocaleString()} color="#38a169" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div className="card">
           <div className="card-header">
-            <h3>Recent Sourcing Requests</h3>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/vendor/sourcing')}>View All</button>
+            <h3>{t('incomingSourcing')}</h3>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/vendor/sourcing')}>{t('view')}</button>
           </div>
           {sourcing.length === 0 ? (
-            <div className="empty-state" style={{ padding: 32 }}><p>No sourcing requests yet</p></div>
+            <div className="empty-state" style={{ padding: 32 }}><p>{t('noData')}</p></div>
           ) : sourcing.slice(0, 5).map(s => (
             <div key={s._id} style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
@@ -97,8 +99,8 @@ const VendorDashboard = () => {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
                 {s.status === 'Pending' && (
                   <>
-                    <button className="btn btn-primary btn-sm" onClick={() => updateStatus(s._id, 'Accepted')} style={{ minWidth: 100 }}>✓ Accept</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => updateStatus(s._id, 'Declined')} style={{ minWidth: 100 }}>✕ Decline</button>
+                    <button className="btn btn-primary btn-sm" onClick={() => updateStatus(s._id, 'Accepted')} style={{ minWidth: 100 }}>✓ {t('acceptRequest')}</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => updateStatus(s._id, 'Declined')} style={{ minWidth: 100 }}>✕ {t('declineRequest')}</button>
                   </>
                 )}
                 {s.status === 'Accepted' && (
@@ -117,11 +119,11 @@ const VendorDashboard = () => {
 
         <div className="card">
           <div className="card-header">
-            <h3>Recent Invoices</h3>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/vendor/invoices')}>View All</button>
+            <h3>{t('myInvoices')}</h3>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/vendor/invoices')}>{t('view')}</button>
           </div>
           {invoices.length === 0 ? (
-            <div className="empty-state" style={{ padding: 32 }}><p>No invoices submitted yet</p></div>
+            <div className="empty-state" style={{ padding: 32 }}><p>{t('noData')}</p></div>
           ) : invoices.slice(0, 5).map(i => (
             <div key={i._id} style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -135,16 +137,16 @@ const VendorDashboard = () => {
       </div>
 
       <div className="card card-body mt-4">
-        <h3 className="mb-4">Quick Actions</h3>
+        <h3 className="mb-4">{t('vendorDashboard')}</h3>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {[
-            { label: '👤 My Profile', to: '/vendor/profile' },
-            { label: '📦 Product Catalogue', to: '/vendor/catalogue' },
-            { label: '📥 Incoming Orders', to: '/vendor/sourcing' },
-            { label: '� Change Status', to: '/vendor/sourcing' },
-            { label: '�🚛 Delivery Status', to: '/vendor/delivery' },
-            { label: '🧾 Submit Invoice', to: '/vendor/submit-invoice' },
-            { label: '📊 Invoice Status', to: '/vendor/invoices' },
+            { label: `👤 ${t('profile')}`, to: '/vendor/profile' },
+            { label: `📦 ${t('catalogue')}`, to: '/vendor/catalogue' },
+            { label: `📥 ${t('incomingSourcing')}`, to: '/vendor/sourcing' },
+            { label: `🔄 ${t('updateStatus')}`, to: '/vendor/sourcing' },
+            { label: `🚛 ${t('deliveryTracking')}`, to: '/vendor/delivery' },
+            { label: `🧾 ${t('submitInvoice')}`, to: '/vendor/submit-invoice' },
+            { label: `📊 ${t('invoiceStatus')}`, to: '/vendor/invoices' },
           ].map(a => (
             <button key={a.label} className="btn btn-outline" onClick={() => navigate(a.to)}>{a.label}</button>
           ))}

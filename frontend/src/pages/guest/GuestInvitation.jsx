@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
 import { invitationsAPI, guestsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
-const RSVP_OPTIONS = [
-  { label: '✅ Attending', value: 'Attending', color: 'var(--success)' },
-  { label: '❌ Not Attending', value: 'Not Attending', color: 'var(--danger)' },
-  { label: '🤔 Maybe', value: 'Maybe', color: 'var(--warning)' },
-];
-
 const GuestInvitation = () => {
+  const { t } = useLang();
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState(null);
   const [confirmed, setConfirmed] = useState(null); // { status, eventName, qrCode }
   const toast = useToast();
+
+  const RSVP_OPTIONS = [
+    { label: '✅ ' + t('attending'), value: 'Attending', color: 'var(--success)' },
+    { label: '❌ ' + t('notAttending'), value: 'Not Attending', color: 'var(--danger)' },
+    { label: '🤔 ' + t('maybe'), value: 'Maybe', color: 'var(--warning)' },
+  ];
 
   useEffect(() => {
     const fetch = async () => {
@@ -62,7 +64,7 @@ const GuestInvitation = () => {
           </div>
           {confirmed.qrCode && (
             <div style={{ background: 'var(--bg)', borderRadius: 12, padding: 16, marginBottom: 20, textAlign: 'center' }}>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Your Check-In QR Code</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>{t('yourCheckInCode')}</div>
               <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16, color: 'var(--primary)', background: '#fff', padding: '10px 16px', borderRadius: 8, border: '2px dashed var(--primary)', display: 'inline-block' }}>
                 {confirmed.qrCode}
               </div>
@@ -70,10 +72,10 @@ const GuestInvitation = () => {
             </div>
           )}
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, margin: '0 0 20px' }}>
-            A confirmation has been noted. You can view your QR code anytime from <strong>My QR Code</strong> in the menu. See you at the event! ☕
+            A confirmation has been noted. You can view your QR code anytime from <strong>{t('myQRCode')}</strong> in the menu. See you at the event! ☕
           </p>
           <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setConfirmed(null)}>
-            Back to My Invitations
+            {t('backToDashboard')}
           </button>
         </div>
       </div>
@@ -82,13 +84,13 @@ const GuestInvitation = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>✉️ My Invitations</h1></div>
+      <div className="page-header"><h1>✉️ {t('myInvitations')}</h1></div>
 
       {invitations.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">✉️</div>
-          <h3>No invitations yet</h3>
-          <p>When organizers invite you to events, they will appear here.</p>
+          <h3>{t('noInvitations')}</h3>
+          <p>{t('invitationsDesc')}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -128,7 +130,7 @@ const GuestInvitation = () => {
 
                     {guest?.rsvpStatus === 'Pending' ? (
                       <div>
-                        <p style={{ fontWeight: 600, marginBottom: 10, fontSize: 14 }}>Will you attend this event?</p>
+                        <p style={{ fontWeight: 600, marginBottom: 10, fontSize: 14 }}>{t('willYouAttend')}</p>
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                           {RSVP_OPTIONS.map(opt => (
                             <button key={opt.value} className="btn btn-outline" style={{ borderColor: opt.color, color: opt.color, minWidth: 140 }}
@@ -141,7 +143,7 @@ const GuestInvitation = () => {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Your response:</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('yourResponse')}:</span>
                         <StatusBadge status={guest?.rsvpStatus} />
                         {guest?.rsvpStatus === 'Attending' && guest?.qrCodeValue && (
                           <span style={{ fontSize: 12, color: 'var(--primary)', background: 'var(--primary-light)', padding: '2px 10px', borderRadius: 6 }}>
@@ -152,7 +154,7 @@ const GuestInvitation = () => {
                           {RSVP_OPTIONS.filter(o => o.value !== guest?.rsvpStatus).map(opt => (
                             <button key={opt.value} className="btn btn-ghost btn-sm" style={{ color: opt.color, borderColor: opt.color }}
                               onClick={() => handleRSVP(guest._id, inv._id, opt.value, event?.name, guest?.qrCodeValue)}>
-                              Change to {opt.label}
+                              {t('changeResponse')} {opt.label}
                             </button>
                           ))}
                         </div>
@@ -161,7 +163,7 @@ const GuestInvitation = () => {
 
                     {event?.agenda && (
                       <details style={{ marginTop: 14 }}>
-                        <summary style={{ cursor: 'pointer', fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>📋 View Event Agenda</summary>
+                        <summary style={{ cursor: 'pointer', fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>{t('viewAgenda')}</summary>
                         <div style={{ marginTop: 8, padding: '10px 14px', background: 'var(--bg-secondary)', borderRadius: 8, fontSize: 13, whiteSpace: 'pre-line', color: 'var(--text-secondary)' }}>
                           {event.agenda}
                         </div>

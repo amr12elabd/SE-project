@@ -3,10 +3,12 @@ import { sourcingAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const STEPS = ['Accepted', 'Preparing', 'Out for Delivery', 'Delivered'];
 
 const DeliveryStatus = () => {
+  const { t } = useLang();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [delayModal, setDelayModal] = useState(null);
@@ -46,10 +48,10 @@ const DeliveryStatus = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>🚛 Delivery Status</h1></div>
+      <div className="page-header"><h1>🚛 {t('deliveryTracking')}</h1></div>
 
       {requests.length === 0 ? (
-        <div className="empty-state"><div className="empty-state-icon">🚛</div><h3>No active deliveries</h3><p>Accepted orders will appear here with their delivery timeline.</p></div>
+        <div className="empty-state"><div className="empty-state-icon">🚛</div><h3>{t('noData')}</h3><p>{t('deliveryTracking')}</p></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {requests.map(r => {
@@ -103,10 +105,10 @@ const DeliveryStatus = () => {
                 <div style={{ display: 'flex', gap: 8 }}>
                   {r.status === 'Accepted' && <button className="btn btn-outline btn-sm" onClick={() => updateStatus(r._id, 'Preparing')}>🏭 Start Preparing</button>}
                   {r.status === 'Preparing' && <button className="btn btn-primary btn-sm" onClick={() => updateStatus(r._id, 'Out for Delivery')}>🚛 Out for Delivery</button>}
-                  {r.status === 'Out for Delivery' && <button className="btn btn-primary btn-sm" onClick={() => updateStatus(r._id, 'Delivered')}>✓ Mark Delivered</button>}
+                  {r.status === 'Out for Delivery' && <button className="btn btn-primary btn-sm" onClick={() => updateStatus(r._id, 'Delivered')}>✓ {t('confirmDelivery')}</button>}
                   {r.status !== 'Delivered' && (
                     <button className="btn btn-ghost btn-sm" onClick={() => { setDelayModal(r); setDelayNote(r.delayNote || ''); }}>
-                      ⚠️ Report Delay
+                      ⚠️ {t('reportDelay')}
                     </button>
                   )}
                 </div>
@@ -120,19 +122,19 @@ const DeliveryStatus = () => {
         <div className="modal-overlay" onClick={() => setDelayModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Report Delay</h2>
+              <h2>{t('reportDelay')}</h2>
               <button className="modal-close" onClick={() => setDelayModal(null)}>✕</button>
             </div>
             <div className="modal-body">
               <p className="text-muted mb-3">Notify the organizer of a delay for: <strong>{delayModal.event?.name}</strong></p>
               <div className="form-group">
-                <label className="form-label">Delay Reason / Note</label>
+                <label className="form-label">{t('delayNote')}</label>
                 <textarea className="form-control" rows={3} value={delayNote} onChange={e => setDelayNote(e.target.value)} placeholder="E.g. Traffic delays, supply shortage..." />
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-ghost" onClick={() => setDelayModal(null)}>Cancel</button>
-              <button className="btn btn-primary" onClick={sendDelayNote}>Send Delay Notice</button>
+              <button className="btn btn-ghost" onClick={() => setDelayModal(null)}>{t('cancel')}</button>
+              <button className="btn btn-primary" onClick={sendDelayNote}>{t('reportDelay')}</button>
             </div>
           </div>
         </div>

@@ -3,10 +3,12 @@ import { guestsAPI, eventsAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const RSVP_STATUSES = ['Pending', 'Attending', 'Not Attending', 'Maybe'];
 
 const GuestCheckin = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [guests, setGuests] = useState([]);
@@ -72,39 +74,39 @@ const GuestCheckin = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>🎟️ Guest Check-In</h1></div>
+      <div className="page-header"><h1>🎟️ {t('guestCheckIn')}</h1></div>
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
         <select className="form-control" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)} style={{ width: 220 }}>
           {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
         </select>
-        <input type="search" className="form-control" placeholder="Search by name or email..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input type="search" className="form-control" placeholder={t('searchGuest')} value={search} onChange={e => setSearch(e.target.value)} />
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="">All Guests</option>
-          <option value="checkedIn">Checked In</option>
-          <option value="pending">Not Checked In</option>
+          <option value="">{t('filterByStatus')}</option>
+          <option value="checkedIn">{t('checkIn')}</option>
+          <option value="pending">{t('pending')}</option>
         </select>
       </div>
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#e8f5f2', color: 'var(--primary)' }}>👥</div>
-          <div className="stat-info"><div className="stat-value">{guests.length}</div><div className="stat-label">Total Guests</div></div>
+          <div className="stat-info"><div className="stat-value">{guests.length}</div><div className="stat-label">{t('guestCheckIn')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>✅</div>
-          <div className="stat-info"><div className="stat-value">{checkedIn}</div><div className="stat-label">Checked In</div></div>
+          <div className="stat-info"><div className="stat-value">{checkedIn}</div><div className="stat-label">{t('checkIn')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#fffaf0', color: 'var(--warning)' }}>⏳</div>
-          <div className="stat-info"><div className="stat-value">{guests.length - checkedIn}</div><div className="stat-label">Remaining</div></div>
+          <div className="stat-info"><div className="stat-value">{guests.length - checkedIn}</div><div className="stat-label">{t('remainingTasks')}</div></div>
         </div>
       </div>
 
       <div className="card">
         <div className="card-header"><h3>Guest List ({filtered.length} shown)</h3></div>
         {filtered.length === 0 ? (
-          <div className="empty-state" style={{ padding: 32 }}><p>No guests found</p></div>
+          <div className="empty-state" style={{ padding: 32 }}><p>{t('noData')}</p></div>
         ) : (
           <div>
             {filtered.map(g => (
@@ -139,7 +141,7 @@ const GuestCheckin = () => {
                 <div style={{ flexShrink: 0, textAlign: 'right' }}>
                   {g.checkInStatus ? (
                     <div>
-                      <div className="badge badge-success" style={{ display: 'block', marginBottom: 6 }}>✓ Checked In</div>
+                      <div className="badge badge-success" style={{ display: 'block', marginBottom: 6 }}>✓ {t('checkIn')}</div>
                       {g.checkedInAt && <div className="text-xs text-muted" style={{ marginBottom: 6 }}>{new Date(g.checkedInAt).toLocaleTimeString()}</div>}
                       <button
                         className="btn btn-outline btn-sm"
@@ -147,7 +149,7 @@ const GuestCheckin = () => {
                         disabled={updating === g._id + '_checkin'}
                         onClick={() => toggleCheckIn(g)}
                       >
-                        Undo
+                        {t('undoArrived')}
                       </button>
                     </div>
                   ) : (
@@ -156,7 +158,7 @@ const GuestCheckin = () => {
                       onClick={() => toggleCheckIn(g)}
                       disabled={updating === g._id + '_checkin' || g.rsvpStatus === 'Not Attending'}
                     >
-                      Check In
+                      {t('checkIn')}
                     </button>
                   )}
                 </div>

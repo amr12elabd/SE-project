@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const BookingRequests = () => {
+  const { t } = useLang();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -55,11 +57,11 @@ const BookingRequests = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>Booking Requests</h1></div>
+      <div className="page-header"><h1>{t('bookings')}</h1></div>
 
       <div className="filter-bar">
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="">All Statuses</option>
+          <option value="">{t('allStatuses')}</option>
           {['Pending', 'Approved', 'Declined', 'Counter-Proposed'].map(s => <option key={s}>{s}</option>)}
         </select>
         <span className="text-muted text-sm">{bookings.length} requests</span>
@@ -69,8 +71,8 @@ const BookingRequests = () => {
         <div className="card">
           <div className="empty-state">
             <div className="empty-state-icon">📋</div>
-            <h3>No booking requests</h3>
-            <p>Go to Venue Search to submit a booking request.</p>
+            <h3>{t('noBookings')}</h3>
+            <p>{t('browseVenues')}</p>
           </div>
         </div>
       ) : bookings.length === 0 ? (
@@ -94,18 +96,18 @@ const BookingRequests = () => {
                   </div>
                   {b.specialRequirements && (
                     <div style={{ marginTop: 10, fontSize: 13 }}>
-                      <span className="text-muted">Requirements: </span>{b.specialRequirements}
+                      <span className="text-muted">{t('requirements')}: </span>{b.specialRequirements}
                     </div>
                   )}
                   {b.ownerMessage && (
                     <div style={{ marginTop: 10, padding: 12, background: 'var(--info-light)', borderRadius: 8, fontSize: 13 }}>
-                      <span style={{ fontWeight: 600, color: 'var(--info)' }}>Venue Owner Response: </span>{b.ownerMessage}
+                      <span style={{ fontWeight: 600, color: 'var(--info)' }}>{t('ownerResponse')}: </span>{b.ownerMessage}
                     </div>
                   )}
                   {b.status === 'Counter-Proposed' && b.counterProposal?.notes && (
                     <div style={{ marginTop: 8, padding: 12, background: 'var(--warning-light)', borderRadius: 8, fontSize: 13 }}>
                       <span style={{ fontWeight: 600, color: 'var(--warning)' }}>
-                        {b.counterProposal.by === 'organizer' ? 'Your Counter Offer (awaiting venue owner): ' : 'Counter Proposal from Venue Owner: '}
+                        {b.counterProposal.by === 'organizer' ? t('yourCounterOffer') + ': ' : t('counterProposal') + ': '}
                       </span>
                       {b.counterProposal.date && `Date: ${new Date(b.counterProposal.date).toLocaleDateString()}`}
                       {b.counterProposal.price && ` | Price: ${b.counterProposal.price} EGP`}
@@ -114,16 +116,16 @@ const BookingRequests = () => {
                         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                           <button className="btn btn-primary btn-sm" disabled={!!responding}
                             onClick={() => handleRespond(b._id, true)}>
-                            {responding === b._id + '_accept' ? 'Accepting...' : 'Accept'}
+                            {responding === b._id + '_accept' ? 'Accepting...' : t('accept')}
                           </button>
                           <button className="btn btn-danger btn-sm" disabled={!!responding}
                             onClick={() => handleRespond(b._id, false)}>
-                            {responding === b._id + '_decline' ? 'Declining...' : 'Decline'}
+                            {responding === b._id + '_decline' ? 'Declining...' : t('decline')}
                           </button>
                           <button className="btn btn-ghost btn-sm" disabled={!!responding}
                             style={{ border: '1px solid var(--border)' }}
                             onClick={() => setCounteringId(counteringId === b._id ? null : b._id)}>
-                            Counter Offer
+                            {t('counterOffer')}
                           </button>
                         </div>
                       )}
@@ -131,27 +133,27 @@ const BookingRequests = () => {
                         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                           <div style={{ display: 'flex', gap: 8 }}>
                             <div style={{ flex: 1 }}>
-                              <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Proposed Date</label>
+                              <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>{t('proposedDate')}</label>
                               <input type="date" className="form-control" value={counterForm.date}
                                 onChange={e => setCounterForm(f => ({ ...f, date: e.target.value }))} />
                             </div>
                             <div style={{ flex: 1 }}>
-                              <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Proposed Price (EGP)</label>
+                              <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>{t('proposedPrice')} (EGP)</label>
                               <input type="number" className="form-control" placeholder="e.g. 4500" value={counterForm.price}
                                 onChange={e => setCounterForm(f => ({ ...f, price: e.target.value }))} />
                             </div>
                           </div>
                           <div>
-                            <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>Notes *</label>
+                            <label style={{ fontSize: 11, fontWeight: 600, display: 'block', marginBottom: 4 }}>{t('counterNotes')} *</label>
                             <input className="form-control" placeholder="Explain your counter offer..." value={counterForm.notes}
                               onChange={e => setCounterForm(f => ({ ...f, notes: e.target.value }))} />
                           </div>
                           <div style={{ display: 'flex', gap: 8 }}>
                             <button className="btn btn-primary btn-sm" disabled={!!responding}
                               onClick={() => handleSendCounter(b._id)}>
-                              {responding === b._id + '_counter' ? 'Sending...' : 'Send Counter Offer'}
+                              {responding === b._id + '_counter' ? 'Sending...' : t('sendCounterOffer')}
                             </button>
-                            <button className="btn btn-ghost btn-sm" onClick={() => setCounteringId(null)}>Cancel</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => setCounteringId(null)}>{t('cancel')}</button>
                           </div>
                         </div>
                       )}
@@ -159,7 +161,7 @@ const BookingRequests = () => {
                   )}
                 </div>
                 <div style={{ textAlign: 'right', fontSize: 12, color: 'var(--text-muted)' }}>
-                  Submitted<br />{new Date(b.createdAt).toLocaleDateString()}
+                  {t('submitted')}<br />{new Date(b.createdAt).toLocaleDateString()}
                 </div>
               </div>
             </div>

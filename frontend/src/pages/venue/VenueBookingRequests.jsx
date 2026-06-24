@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useToast } from '../../components/Toast';
 
 const VenueBookingRequests = () => {
+  const { t } = useLang();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('Pending');
@@ -56,13 +58,13 @@ const VenueBookingRequests = () => {
     <div>
       <ConfirmModal isOpen={Boolean(confirmDecline)} onClose={() => setConfirmDecline(null)}
         onConfirm={async () => { if (!confirmDecline) return; await handleResponse(confirmDecline, 'Declined', 'This request has been declined.'); setConfirmDecline(null); }}
-        title="Decline Booking Request" message={`Decline the booking request from ${confirmDecline?.organizer?.name} for ${new Date(confirmDecline?.date || Date.now()).toDateString()}? This will notify the organizer.`} confirmLabel="Decline Request" />
-      <div className="page-header"><h1>📥 Booking Requests</h1></div>
+        title="Decline Booking Request" message={`Decline the booking request from ${confirmDecline?.organizer?.name} for ${new Date(confirmDecline?.date || Date.now()).toDateString()}? This will notify the organizer.`} confirmLabel={t('declineBooking')} />
+      <div className="page-header"><h1>📥 {t('bookings')}</h1></div>
 
       <div className="filter-bar mb-4">
         {['', 'Pending', 'Approved', 'Declined', 'Counter-Proposed'].map((s, i) => (
           <button key={i} className={`btn btn-sm ${filter === s ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter(s)}>
-            {s || 'All'}
+            {s || t('all')}
           </button>
         ))}
       </div>
@@ -82,29 +84,29 @@ const VenueBookingRequests = () => {
                   <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
                     <span>👤 {b.organizer?.name} ({b.organizer?.email})</span>
                     <span>📅 {new Date(b.date).toLocaleDateString()}</span>
-                    <span>👥 {b.expectedAttendees} attendees</span>
+                    <span>👥 {b.expectedAttendees} {t('attendees')}</span>
                   </div>
                   {b.specialRequirements && (
                     <div style={{ padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 6, fontSize: 13, marginBottom: 8 }}>
-                      📝 Special Requirements: {b.specialRequirements}
+                      📝 {t('specialRequirements')}: {b.specialRequirements}
                     </div>
                   )}
                   {b.ownerMessage && (
                     <div style={{ padding: '8px 12px', background: '#f0f9ff', borderRadius: 6, fontSize: 13, marginBottom: 8 }}>
-                      💬 Your response: {b.ownerMessage}
+                      💬 {t('ownerResponse')}: {b.ownerMessage}
                     </div>
                   )}
                   {b.counterProposal && b.status === 'Counter-Proposed' && (
                     <div style={{ padding: '10px 14px', background: '#fff3e0', borderRadius: 6, fontSize: 13 }}>
-                      🔄 Counter Proposal: Date {b.counterProposal.date ? new Date(b.counterProposal.date).toLocaleDateString() : '—'} · EGP {b.counterProposal.price || '—'} · {b.counterProposal.notes}
+                      🔄 {t('counterProposal')}: Date {b.counterProposal.date ? new Date(b.counterProposal.date).toLocaleDateString() : '—'} · EGP {b.counterProposal.price || '—'} · {b.counterProposal.notes}
                     </div>
                   )}
                 </div>
                 {b.status === 'Pending' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
-                    <button className="btn btn-primary btn-sm" onClick={() => openResponse(b, 'approve')}>✓ Approve</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => openResponse(b, 'counter')}>🔄 Counter</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => openResponse(b, 'decline')}>✕ Decline</button>
+                    <button className="btn btn-primary btn-sm" onClick={() => openResponse(b, 'approve')}>✓ {t('approveBooking')}</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => openResponse(b, 'counter')}>🔄 {t('counterPropose')}</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => openResponse(b, 'decline')}>✕ {t('declineBooking')}</button>
                   </div>
                 )}
               </div>
@@ -118,7 +120,7 @@ const VenueBookingRequests = () => {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                {responseType === 'approve' ? '✓ Approve Booking' : responseType === 'decline' ? '✕ Decline Booking' : '🔄 Counter-Propose'}
+                {responseType === 'approve' ? '✓ ' + t('approveBooking') : responseType === 'decline' ? '✕ ' + t('declineBooking') : '🔄 ' + t('counterPropose')}
               </h2>
               <button className="modal-close" onClick={() => setResponding(null)}>✕</button>
             </div>
@@ -126,31 +128,31 @@ const VenueBookingRequests = () => {
               <p className="text-muted mb-3">Responding to booking request for <strong>{responding.venue?.name}</strong> on {new Date(responding.date).toLocaleDateString()}</p>
 
               <div className="form-group">
-                <label className="form-label">Message to Organizer</label>
+                <label className="form-label">{t('ownerMessage')}</label>
                 <textarea className="form-control" rows={3} value={responseForm.ownerMessage} onChange={e => setResponseForm(f => ({ ...f, ownerMessage: e.target.value }))} placeholder={responseType === 'approve' ? "We're happy to confirm your booking..." : responseType === 'decline' ? "Unfortunately we cannot accommodate..." : "We'd like to propose an alternative..."} />
               </div>
 
               {responseType === 'counter' && (
                 <>
                   <div className="form-group">
-                    <label className="form-label">Alternative Date</label>
+                    <label className="form-label">{t('counterDate')}</label>
                     <input type="date" className="form-control" value={responseForm.counterDate} onChange={e => setResponseForm(f => ({ ...f, counterDate: e.target.value }))} />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Proposed Price (EGP)</label>
+                    <label className="form-label">{t('counterPrice')}</label>
                     <input type="number" className="form-control" value={responseForm.counterPrice} onChange={e => setResponseForm(f => ({ ...f, counterPrice: e.target.value }))} min={0} />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Additional Notes</label>
+                    <label className="form-label">{t('counterNotesLabel')}</label>
                     <textarea className="form-control" rows={2} value={responseForm.counterNotes} onChange={e => setResponseForm(f => ({ ...f, counterNotes: e.target.value }))} />
                   </div>
                 </>
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-ghost" onClick={() => setResponding(null)}>Cancel</button>
+              <button className="btn btn-ghost" onClick={() => setResponding(null)}>{t('cancel')}</button>
               <button className={`btn ${responseType === 'decline' ? 'btn-danger' : 'btn-primary'}`} onClick={submitResponse}>
-                {responseType === 'approve' ? 'Confirm Approval' : responseType === 'decline' ? 'Send Decline' : 'Send Counter Proposal'}
+                {t('submitResponse')}
               </button>
             </div>
           </div>

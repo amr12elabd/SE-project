@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LanguageContext';
 
 const demoCredentials = [
   { name: 'Sara Hassan',          role: 'Organizer',    email: 'organizer@popeyez.com' },
@@ -22,6 +23,7 @@ const demoCredentials = [
 ];
 
 const Login = () => {
+  const { t } = useLang();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,33 +63,33 @@ const Login = () => {
         <div className="auth-logo">
           <div style={{ fontSize: 48 }}>☕</div>
           <h1>PopEyez</h1>
-          <p>Sign in to your account</p>
+          <p>{t('signInDesc')}</p>
         </div>
 
         {error && <div className="alert alert-danger mb-4">⚠️ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">{t('emailAddress')}</label>
             <input type="email" className="form-control" placeholder="you@example.com"
               value={email} onChange={e => setEmail(e.target.value)} autoFocus />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">{t('passwordLabel')}</label>
             <input type="password" className="form-control" placeholder="Enter your password"
               value={password} onChange={e => setPassword(e.target.value)} />
           </div>
           <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in...' : t('signIn')}
           </button>
         </form>
 
         <div className="auth-footer">
-          Don't have an account? <Link to="/register">Create one</Link>
+          {t('noAccount')} <Link to="/register">{t('createOne')}</Link>
         </div>
 
         <hr className="divider" style={{ margin: '24px 0' }} />
-        <div style={{ marginBottom: 10, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Quick Demo Login</div>
+        <div style={{ marginBottom: 10, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('quickDemo')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {demoCredentials.map((c, i) => (
             <button key={i} onClick={() => quickLogin(c)}
@@ -99,7 +101,7 @@ const Login = () => {
             </button>
           ))}
         </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 10 }}>All accounts use password: <strong>password123</strong></p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 10 }}>{t('demoPassword')} <strong>password123</strong></p>
       </div>
     </div>
   );

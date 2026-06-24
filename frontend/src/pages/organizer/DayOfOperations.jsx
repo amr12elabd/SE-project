@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { eventsAPI, guestsAPI, sourcingAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const DayOfOperations = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [guests, setGuests] = useState([]);
@@ -57,17 +59,17 @@ const DayOfOperations = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>⚡ Day-Of Operations</h1>
+        <h1>⚡ {t('dayOfDashboard')}</h1>
         <select className="form-control" style={{ width: 220 }} value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)}>
           {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
         </select>
       </div>
 
       <div className="grid-4 mb-6">
-        <DashboardCard icon="👥" label="Total Guests" value={guests.length} color="#1a6b5c" />
-        <DashboardCard icon="✅" label="Attending (RSVP)" value={attending} color="#38a169" />
-        <DashboardCard icon="🎟️" label="Checked In" value={checkedIn} color="#3182ce" sub={`${guests.length > 0 ? ((checkedIn/guests.length)*100).toFixed(0) : 0}% attendance rate`} />
-        <DashboardCard icon="🚚" label="Deliveries Done" value={vendorStatuses.Delivered} color="#7c3aed" sub={`${vendorStatuses['Out for Delivery']} en route`} />
+        <DashboardCard icon="👥" label={t('totalExpected')} value={guests.length} color="#1a6b5c" />
+        <DashboardCard icon="✅" label={t('attending')} value={attending} color="#38a169" />
+        <DashboardCard icon="🎟️" label={t('totalArrived')} value={checkedIn} color="#3182ce" sub={`${guests.length > 0 ? ((checkedIn/guests.length)*100).toFixed(0) : 0}%`} />
+        <DashboardCard icon="🚚" label={t('vendorsSummary')} value={vendorStatuses.Delivered} color="#7c3aed" sub={`${vendorStatuses['Out for Delivery']} en route`} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -110,7 +112,7 @@ const DayOfOperations = () => {
           <div className="card-header"><h3>Vendor / Delivery Status</h3></div>
           <div style={{ maxHeight: 500, overflowY: 'auto' }}>
             {sourcingRequests.length === 0 ? (
-              <div className="empty-state" style={{ padding: 32 }}><p>No sourcing requests for this event</p></div>
+              <div className="empty-state" style={{ padding: 32 }}><p>{t('noSourcingRequests')}</p></div>
             ) : sourcingRequests.map(r => (
               <div key={r._id} style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>

@@ -3,10 +3,12 @@ import { sourcingAPI } from '../../api';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const STATUS_FLOW = ['Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered'];
 
 const IncomingSourcing = () => {
+  const { t } = useLang();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -39,18 +41,18 @@ const IncomingSourcing = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>📥 Incoming Sourcing Requests</h1></div>
+      <div className="page-header"><h1>📥 {t('incomingSourcing')}</h1></div>
 
       <div className="filter-bar mb-4">
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="">All Statuses</option>
+          <option value="">{t('filterByStatus')}</option>
           {STATUS_FLOW.concat(['Declined']).map(s => <option key={s}>{s}</option>)}
         </select>
         <span className="text-muted text-sm">{filtered.length} requests</span>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty-state"><div className="empty-state-icon">📥</div><h3>No requests found</h3></div>
+        <div className="empty-state"><div className="empty-state-icon">📥</div><h3>{t('noData')}</h3></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {filtered.map(r => (
@@ -68,7 +70,7 @@ const IncomingSourcing = () => {
                     {r.totalEstimatedCost > 0 && <span>💰 EGP {r.totalEstimatedCost.toLocaleString()}</span>}
                   </div>
                   <div style={{ marginBottom: 10 }}>
-                    <strong style={{ fontSize: 13 }}>Requested Items:</strong>
+                    <strong style={{ fontSize: 13 }}>{t('item')}:</strong>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
                       {r.requestedItems?.map((item, i) => (
                         <div key={i} className="chip">
@@ -88,9 +90,9 @@ const IncomingSourcing = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
                   {r.status === 'Pending' && (
                     <>
-                      <button className="btn btn-primary btn-sm" onClick={() => updateStatus(r._id, 'Accepted')}>✓ Accept</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => updateStatus(r._id, 'Declined')}>✕ Decline</button>
-                      <button className="btn btn-outline btn-sm" onClick={() => setSelected(r)}>💬 Clarify</button>
+                      <button className="btn btn-primary btn-sm" onClick={() => updateStatus(r._id, 'Accepted')}>✓ {t('acceptRequest')}</button>
+                      <button className="btn btn-danger btn-sm" onClick={() => updateStatus(r._id, 'Declined')}>✕ {t('declineRequest')}</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => setSelected(r)}>💬 {t('sendMessage3')}</button>
                     </>
                   )}
                   {r.status === 'Accepted' && (
@@ -115,22 +117,22 @@ const IncomingSourcing = () => {
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Request Clarification</h2>
+              <h2>{t('clarificationNote')}</h2>
               <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
             </div>
             <div className="modal-body">
               <p className="text-muted mb-3">Send a clarification note to the organizer for: <strong>{selected.event?.name}</strong></p>
               <div className="form-group">
-                <label className="form-label">Clarification Note</label>
+                <label className="form-label">{t('clarificationNote')}</label>
                 <textarea className="form-control" rows={4} value={clarification} onChange={e => setClarification(e.target.value)} placeholder="E.g. We need to confirm the delivery address. Which entrance should we use?" />
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-ghost" onClick={() => setSelected(null)}>Cancel</button>
+              <button className="btn btn-ghost" onClick={() => setSelected(null)}>{t('cancel')}</button>
               <button className="btn btn-primary" onClick={() => {
                 updateStatus(selected._id, selected.status, { clarificationNote: clarification });
                 setClarification('');
-              }}>Send Note</button>
+              }}>{t('send')}</button>
             </div>
           </div>
         </div>

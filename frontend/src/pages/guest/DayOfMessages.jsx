@@ -3,9 +3,11 @@ import { commsAPI, invitationsAPI } from '../../api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LanguageContext';
 
 const DayOfMessages = () => {
   const { user } = useAuth();
+  const { t } = useLang();
   const toast = useToast();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
@@ -49,7 +51,7 @@ const DayOfMessages = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>📨 Day-Of Messages</h1>
+        <h1>📨 {t('dayOfMessages')}</h1>
         <select className="form-control" style={{ width: 240 }} value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)}>
           {events.length === 0 ? <option value="">No events</option> : events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
         </select>
@@ -58,7 +60,7 @@ const DayOfMessages = () => {
       {events.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">📨</div>
-          <h3>No messages yet</h3>
+          <h3>{t('noMessages')}</h3>
           <p>Messages from your event organizer will appear here on the day of the event.</p>
         </div>
       ) : (

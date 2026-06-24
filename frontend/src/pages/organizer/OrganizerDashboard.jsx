@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { eventsAPI, tasksAPI, guestsAPI, notificationsAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LanguageContext';
 import DashboardCard from '../../components/DashboardCard';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -9,6 +10,7 @@ import OnboardingTour from '../../components/OnboardingTour';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const OrganizerDashboard = () => {
+  const { t } = useLang();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -55,7 +57,7 @@ const OrganizerDashboard = () => {
           <h1>Welcome back, {user?.name?.split(' ')[0]}! 👋</h1>
           <p className="text-muted text-sm">{new Date().toLocaleDateString('en-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
-        <button className="btn btn-primary" onClick={() => navigate('/events/new')}>+ Create Event</button>
+        <button className="btn btn-primary" onClick={() => navigate('/events/new')}>+ {t('createEvent')}</button>
       </div>
 
       {/* Today's events alert */}
@@ -74,16 +76,16 @@ const OrganizerDashboard = () => {
 
       {/* Stats */}
       <div className="grid-4 mb-6">
-        <DashboardCard icon="📅" label="Total Events" value={events.length} color="#1a6b5c" sub={`${upcomingEvents.length} upcoming`} />
-        <DashboardCard icon="✅" label="Task Completion" value={`${completionRate}%`} color="#3182ce" sub={`${tasks.filter(t => t.status === 'Done').length} of ${tasks.length} done`} />
-        <DashboardCard icon="⚡" label="Urgent Tasks" value={urgentTasks.length} color={urgentTasks.length > 0 ? '#dd6b20' : '#38a169'} sub="due in 3 days" />
-        <DashboardCard icon="🔔" label="Unread Notifications" value={notifications.filter(n => !n.isRead).length} color="#7c3aed" />
+        <DashboardCard icon="📅" label={t('events')} value={events.length} color="#1a6b5c" sub={`${upcomingEvents.length} upcoming`} />
+        <DashboardCard icon="✅" label={t('taskCompletion')} value={`${completionRate}%`} color="#3182ce" sub={`${tasks.filter(t => t.status === 'Done').length} of ${tasks.length} done`} />
+        <DashboardCard icon="⚡" label={t('tasksSummary')} value={urgentTasks.length} color={urgentTasks.length > 0 ? '#dd6b20' : '#38a169'} sub="due in 3 days" />
+        <DashboardCard icon="🔔" label={t('liveStats')} value={notifications.filter(n => !n.isRead).length} color="#7c3aed" />
       </div>
 
       {/* Next 7 Days Timeline */}
       {next7Days.length > 0 && (
         <div className="card card-body mb-6">
-          <h3 style={{ marginBottom: 14 }}>📆 Next 7 Days</h3>
+          <h3 style={{ marginBottom: 14 }}>📆 {t('dayOf')}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {next7Days.map(ev => {
               const daysUntil = Math.ceil((new Date(ev.date) - new Date()) / (1000 * 60 * 60 * 24));

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { guestsAPI, invitationsAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LanguageContext';
 import QRCode from 'qrcode.react';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const QRCheckin = () => {
   const { user } = useAuth();
+  const { t } = useLang();
   const [guestRecords, setGuestRecords] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ const QRCheckin = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>🎟️ My QR Code</h1></div>
+      <div className="page-header"><h1>🎟️ {t('myQRCode')}</h1></div>
 
       {guestRecords.length === 0 ? (
         <div className="empty-state">
@@ -41,7 +43,7 @@ const QRCheckin = () => {
         <>
           {guestRecords.length > 1 && (
             <div className="filter-bar mb-4">
-              <label className="form-label" style={{ margin: 0 }}>Select event:</label>
+              <label className="form-label" style={{ margin: 0 }}>{t('selectEvent2')}:</label>
               {guestRecords.map(r => (
                 <button key={r._id} className={`btn btn-sm ${selected?._id === r._id ? 'btn-primary' : 'btn-outline'}`} onClick={() => setSelected(r)}>
                   {r.event?.name || 'Event'}
@@ -75,7 +77,7 @@ const QRCheckin = () => {
                 </div>
 
                 <div style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>QR Code Value</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t('yourCheckInCode')}</div>
                   <div style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all', color: 'var(--text-secondary)' }}>{selected.qrCodeValue}</div>
                 </div>
 
@@ -96,7 +98,7 @@ const QRCheckin = () => {
                   </div>
                 ) : (
                   <div className="alert" style={{ background: '#fffaf0', padding: '10px 14px', borderRadius: 8, fontSize: 13 }}>
-                    📲 Show this QR code to the staff at the event entrance for check-in.
+                    📲 {t('showAtEntrance')}
                   </div>
                 )}
               </div>

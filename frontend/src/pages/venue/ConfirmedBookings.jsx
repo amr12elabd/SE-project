@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
@@ -13,6 +14,7 @@ const statusStyle = {
 };
 
 const ConfirmedBookings = () => {
+  const { t } = useLang();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -69,7 +71,7 @@ const ConfirmedBookings = () => {
               <span>👤 {b.organizer?.name}</span>
               <span>📧 <a href={`mailto:${b.organizer?.email}`} style={{ color: 'var(--primary)' }}>{b.organizer?.email}</a></span>
               {b.organizer?.phone && <span>📞 <a href={`tel:${b.organizer?.phone}`} style={{ color: 'var(--primary)' }}>{b.organizer?.phone}</a></span>}
-              <span>👥 {b.expectedAttendees} attendees</span>
+              <span>👥 {b.expectedAttendees} {t('attendees')}</span>
             </div>
             {b.event?.name && <div className="text-sm text-muted mt-1">🎭 Event: {b.event.name}</div>}
             {b.specialRequirements && <div className="text-sm text-muted mt-1">📝 {b.specialRequirements}</div>}
@@ -92,11 +94,11 @@ const ConfirmedBookings = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>✅ Confirmed Bookings</h1>
+        <h1>✅ {t('confirmedBookings')}</h1>
         <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{filtered.length} booking{filtered.length !== 1 ? 's' : ''}</div>
       </div>
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search by venue, organizer or event..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
+        <input type="search" className="form-control" placeholder={t('search') + '...'} value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <label style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>From</label>
           <input type="date" className="form-control" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
@@ -105,12 +107,12 @@ const ConfirmedBookings = () => {
           <label style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>To</label>
           <input type="date" className="form-control" value={dateTo} onChange={e => setDateTo(e.target.value)} />
         </div>
-        {(dateFrom || dateTo) && <button className="btn btn-ghost btn-sm" onClick={() => { setDateFrom(''); setDateTo(''); }}>Clear</button>}
+        {(dateFrom || dateTo) && <button className="btn btn-ghost btn-sm" onClick={() => { setDateFrom(''); setDateTo(''); }}>{t('clear')}</button>}
       </div>
 
       <div className="filter-bar mb-4">
-        <input type="search" className="form-control" placeholder="Search by venue, organizer, or event..." value={search} onChange={e => setSearch(e.target.value)} />
-        <span className="text-muted text-sm">{filtered.length} confirmed bookings</span>
+        <input type="search" className="form-control" placeholder={t('search') + '...'} value={search} onChange={e => setSearch(e.target.value)} />
+        <span className="text-muted text-sm">{filtered.length} {t('confirmedBookings').toLowerCase()}</span>
       </div>
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
@@ -124,7 +126,7 @@ const ConfirmedBookings = () => {
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#fff3e0', color: 'var(--secondary)' }}>✅</div>
-          <div className="stat-info"><div className="stat-value">{bookings.length}</div><div className="stat-label">Total Confirmed</div></div>
+          <div className="stat-info"><div className="stat-value">{bookings.length}</div><div className="stat-label">{t('confirmedCount')}</div></div>
         </div>
       </div>
 

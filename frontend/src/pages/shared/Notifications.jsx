@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { notificationsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const Notifications = () => {
+  const { t } = useLang();
   const [data, setData] = useState({ notifications: [], unreadCount: 0 });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -46,18 +48,18 @@ const Notifications = () => {
     <div>
       <div className="page-header">
         <div>
-          <h1>Notifications</h1>
-          {data.unreadCount > 0 && <p className="text-muted text-sm">{data.unreadCount} unread</p>}
+          <h1>{t('notifications')}</h1>
+          {data.unreadCount > 0 && <p className="text-muted text-sm">{data.unreadCount} {t('unread')}</p>}
         </div>
         <div className="page-actions">
-          {data.unreadCount > 0 && <button className="btn btn-outline btn-sm" onClick={markAllRead}>Mark All Read</button>}
+          {data.unreadCount > 0 && <button className="btn btn-outline btn-sm" onClick={markAllRead}>{t('markAllRead')}</button>}
         </div>
       </div>
 
       <div className="filter-bar">
         {['all', 'unread'].map(f => (
           <button key={f} className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'All' : 'Unread'}
+            {f === 'all' ? t('all') : t('unread')}
           </button>
         ))}
       </div>
@@ -66,8 +68,8 @@ const Notifications = () => {
         {data.notifications.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">🔔</div>
-            <h3>No notifications</h3>
-            <p>You're all caught up! Notifications will appear here.</p>
+            <h3>{t('noNotifications')}</h3>
+            <p>{t('noNotifDesc')}</p>
           </div>
         ) : (
           <div>

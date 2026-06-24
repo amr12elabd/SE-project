@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { layoutAPI, eventsAPI } from '../../api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import { useLang } from '../../context/LanguageContext';
 
 const COLORS = { table: '#4CAF50', booth: '#9C27B0', bar: '#795548', stage: '#FF5722', entrance: '#2196F3', exit: '#F44336', equipment: '#607D8B', decoration: '#8BC34A' };
 
 const SharedLayout = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [layout, setLayout] = useState(null);
@@ -40,14 +42,14 @@ const SharedLayout = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>🗺️ Venue Floor Plan</h1>
+        <h1>🗺️ {t('floorPlan')}</h1>
         <select className="form-control" style={{ width: 220 }} value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)}>
           {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
         </select>
       </div>
 
       {!layout?.elements?.length ? (
-        <div className="empty-state"><div className="empty-state-icon">🗺️</div><h3>No layout available</h3><p>The organizer hasn't shared a floor plan yet.</p></div>
+        <div className="empty-state"><div className="empty-state-icon">🗺️</div><h3>{t('noData')}</h3><p>{t('floorPlan')}</p></div>
       ) : (
         <>
           {!layout.sharedWithStaff && (
@@ -82,7 +84,7 @@ const SharedLayout = () => {
 
             <div>
               <div className="card card-body mb-3">
-                <h3 className="mb-3">Summary</h3>
+                <h3 className="mb-3">{t('description')}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}><span className="text-muted">Total Elements</span><span style={{ fontWeight: 600 }}>{layout.elements.length}</span></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}><span className="text-muted">Tables</span><span style={{ fontWeight: 600 }}>{layout.elements.filter(e => e.type === 'table').length}</span></div>
@@ -93,7 +95,7 @@ const SharedLayout = () => {
 
               {layout.setupInstructions && (
                 <div className="card card-body">
-                  <h3 className="mb-3">Setup Instructions</h3>
+                  <h3 className="mb-3">{t('notes')}</h3>
                   <div style={{ fontSize: 13, whiteSpace: 'pre-line', color: 'var(--text-secondary)', lineHeight: 1.7 }}>{layout.setupInstructions}</div>
                 </div>
               )}

@@ -3,8 +3,10 @@ import { invoicesAPI, sourcingAPI } from '../../api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import { useNavigate } from 'react-router-dom';
+import { useLang } from '../../context/LanguageContext';
 
 const SubmitInvoice = () => {
+  const { t } = useLang();
   const navigate = useNavigate();
   const toast = useToast();
   const [sourcing, setSourcing] = useState([]);
@@ -81,7 +83,7 @@ const SubmitInvoice = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>🧾 Submit Invoice</h1></div>
+      <div className="page-header"><h1>🧾 {t('submitInvoice')}</h1></div>
 
       {sourcing.length === 0 && (
         <div className="alert alert-warning mb-4">
@@ -91,10 +93,10 @@ const SubmitInvoice = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="card card-body mb-4">
-          <h3 className="mb-4">Invoice Details</h3>
+          <h3 className="mb-4">{t('submitInvoice')}</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label">Sourcing Request *</label>
+              <label className="form-label">{t('sourcing')} *</label>
               <select className="form-control" value={form.sourcingRequest} onChange={e => setForm(f => ({ ...f, sourcingRequest: e.target.value }))} required>
                 {sourcing.length === 0 ? <option value="">No eligible requests</option>
                   : sourcing.map(s => <option key={s._id} value={s._id}>{s.event?.name} — {new Date(s.deliveryDate).toLocaleDateString()} ({s.status})</option>)}
@@ -106,7 +108,7 @@ const SubmitInvoice = () => {
               )}
             </div>
             <div className="form-group">
-              <label className="form-label">Due Date</label>
+              <label className="form-label">{t('dueDate2')}</label>
               <input type="date" className="form-control" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
             </div>
           </div>
@@ -114,12 +116,12 @@ const SubmitInvoice = () => {
 
         <div className="card card-body mb-4">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3>Line Items</h3>
-            <button type="button" className="btn btn-outline btn-sm" onClick={addItem}>+ Add Line</button>
+            <h3>{t('invoiceItems')}</h3>
+            <button type="button" className="btn btn-outline btn-sm" onClick={addItem}>+ {t('addLineItem')}</button>
           </div>
           <table className="table">
             <thead>
-              <tr><th>Description</th><th>Qty</th><th>Unit Price (EGP)</th><th>Total (EGP)</th><th></th></tr>
+              <tr><th>{t('description')}</th><th>{t('qty')}</th><th>{t('unitPrice')}</th><th>{t('total')}</th><th></th></tr>
             </thead>
             <tbody>
               {form.items.map((item, i) => (
@@ -134,7 +136,7 @@ const SubmitInvoice = () => {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={3} style={{ textAlign: 'right', fontWeight: 700, padding: '12px 8px' }}>Total Amount:</td>
+                <td colSpan={3} style={{ textAlign: 'right', fontWeight: 700, padding: '12px 8px' }}>{t('totalAmount')}:</td>
                 <td style={{ fontWeight: 700, fontSize: 16, color: 'var(--primary)' }}>EGP {totalAmount.toLocaleString()}</td>
                 <td></td>
               </tr>
@@ -144,15 +146,15 @@ const SubmitInvoice = () => {
 
         <div className="card card-body mb-4">
           <div className="form-group">
-            <label className="form-label">Notes (optional)</label>
+            <label className="form-label">{t('breakdown')}</label>
             <textarea className="form-control" rows={3} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Payment terms, bank details, or any notes for the organizer..." />
           </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>Cancel</button>
+          <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>{t('cancel')}</button>
           <button type="submit" className="btn btn-primary" disabled={submitting || sourcing.length === 0}>
-            {submitting ? 'Submitting...' : '🧾 Submit Invoice'}
+            {submitting ? t('loading') : `🧾 ${t('submitInvoiceBtn')}`}
           </button>
         </div>
       </form>

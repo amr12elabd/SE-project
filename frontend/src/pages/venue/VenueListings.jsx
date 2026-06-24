@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { venuesAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 const VenueListings = () => {
   const navigate = useNavigate();
+  const { t } = useLang();
   const toast = useToast();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +36,8 @@ const VenueListings = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>🏛️ My Venue Listings</h1>
-        <button className="btn btn-primary" onClick={() => navigate('/venue/new')}>+ Add Venue</button>
+        <h1>🏛️ {t('myVenues')}</h1>
+        <button className="btn btn-primary" onClick={() => navigate('/venue/new')}>{t('addNewVenue')}</button>
       </div>
 
       {venues.length === 0 ? (
@@ -43,7 +45,7 @@ const VenueListings = () => {
           <div className="empty-state-icon">🏛️</div>
           <h3>No venues listed yet</h3>
           <p>Add your first venue to start receiving booking requests from event organizers.</p>
-          <button className="btn btn-primary mt-4" onClick={() => navigate('/venue/new')}>Add Your First Venue</button>
+          <button className="btn btn-primary mt-4" onClick={() => navigate('/venue/new')}>{t('addNewVenue')}</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -56,11 +58,11 @@ const VenueListings = () => {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
                     <h2 style={{ margin: 0 }}>{v.name}</h2>
-                    <span className={`badge ${v.isActive ? 'badge-success' : 'badge-warning'}`}>{v.isActive ? 'Active' : 'Inactive'}</span>
+                    <span className={`badge ${v.isActive ? 'badge-success' : 'badge-warning'}`}>{v.isActive ? t('active') : t('inactive')}</span>
                   </div>
                   <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 8 }}>📍 {v.location?.address}, {v.location?.area}, {v.location?.city}</div>
                   <div style={{ display: 'flex', gap: 16, fontSize: 13, marginBottom: 10 }}>
-                    <span>👥 Capacity: {v.capacity}</span>
+                    <span>👥 {t('capacity')}: {v.capacity}</span>
                     <span>💰 EGP {v.pricing?.perDay?.toLocaleString()} / day</span>
                     {v.rating > 0 && <span>⭐ {v.rating?.toFixed(1)} ({v.reviewCount} reviews)</span>}
                   </div>
@@ -70,9 +72,9 @@ const VenueListings = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
-                  <button className="btn btn-primary btn-sm" onClick={() => navigate(`/venue/edit/${v._id}`)}>✏️ Edit</button>
+                  <button className="btn btn-primary btn-sm" onClick={() => navigate(`/venue/edit/${v._id}`)}>✏️ {t('edit')}</button>
                   <button className={`btn btn-sm ${v.isActive ? 'btn-danger' : 'btn-outline'}`} onClick={() => toggleActive(v)}>
-                    {v.isActive ? '⏸️ Deactivate' : '▶️ Activate'}
+                    {v.isActive ? '⏸️ ' + t('deactivate') : '▶️ ' + t('activate')}
                   </button>
                 </div>
               </div>

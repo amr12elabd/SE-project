@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { invitationsAPI, feedbackAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import OnboardingTour from '../../components/OnboardingTour';
 
 const GuestDashboard = () => {
   const { user } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ const GuestDashboard = () => {
           </div>
           <div style={{ textAlign: 'center', background: 'rgba(255,255,255,0.2)', borderRadius: 12, padding: '12px 24px' }}>
             <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1 }}>{daysUntilNext === 0 ? '🎉' : daysUntilNext}</div>
-            <div style={{ fontSize: 12, opacity: 0.9 }}>{daysUntilNext === 0 ? 'TODAY!' : daysUntilNext === 1 ? 'day away' : 'days away'}</div>
+            <div style={{ fontSize: 12, opacity: 0.9 }}>{daysUntilNext === 0 ? t('today') : daysUntilNext === 1 ? t('daysUntil') : t('daysUntil')}</div>
           </div>
         </div>
       )}
@@ -63,11 +65,11 @@ const GuestDashboard = () => {
       <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#e8f5f2', color: 'var(--primary)' }}>✉️</div>
-          <div className="stat-info"><div className="stat-value">{invitations.length}</div><div className="stat-label">Invitations</div></div>
+          <div className="stat-info"><div className="stat-value">{invitations.length}</div><div className="stat-label">{t('myInvitations')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>✅</div>
-          <div className="stat-info"><div className="stat-value">{attending}</div><div className="stat-label">Attending</div></div>
+          <div className="stat-info"><div className="stat-value">{attending}</div><div className="stat-label">{t('attending')}</div></div>
         </div>
         <div className="stat-card" style={{ flex: 1 }}>
           <div className="stat-icon" style={{ background: '#fffaf0', color: 'var(--warning)' }}>⏳</div>
@@ -78,11 +80,11 @@ const GuestDashboard = () => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div className="card">
           <div className="card-header">
-            <h3>My Invitations</h3>
+            <h3>{t('myInvitations')}</h3>
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/guest/invitation')}>View All</button>
           </div>
           {invitations.length === 0 ? (
-            <div className="empty-state" style={{ padding: 32 }}><p>No invitations yet</p></div>
+            <div className="empty-state" style={{ padding: 32 }}><p>{t('noInvitations')}</p></div>
           ) : invitations.slice(0, 4).map(inv => (
             <div key={inv._id} style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -98,10 +100,10 @@ const GuestDashboard = () => {
           <h3 className="mb-4">Quick Actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              { label: '✉️ My Invitations', desc: 'View and respond to event invitations', to: '/guest/invitation' },
-              { label: '📨 Day-Of Messages', desc: 'Real-time updates from your organizer', to: '/guest/messages' },
-              { label: '🎟️ My QR Code', desc: 'Show this at the event entrance', to: '/guest/qr' },
-              { label: '⭐ Leave Feedback', desc: 'Rate events you\'ve attended', to: '/guest/feedback' },
+              { label: '✉️ ' + t('myInvitations'), desc: 'View and respond to event invitations', to: '/guest/invitation' },
+              { label: '📨 ' + t('dayOfMessages'), desc: 'Real-time updates from your organizer', to: '/guest/messages' },
+              { label: '🎟️ ' + t('myQRCode'), desc: t('showAtEntrance'), to: '/guest/qr' },
+              { label: '⭐ ' + t('submitFeedback'), desc: 'Rate events you\'ve attended', to: '/guest/feedback' },
             ].map(a => (
               <button key={a.label} className="btn btn-outline" style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '12px 16px', height: 'auto' }} onClick={() => navigate(a.to)}>
                 <div>

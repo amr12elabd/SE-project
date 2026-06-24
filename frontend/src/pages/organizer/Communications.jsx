@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { commsAPI, eventsAPI, guestsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 
 const Communications = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [comms, setComms] = useState([]);
@@ -82,12 +84,12 @@ const Communications = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>Communications</h1>
+        <h1>{t('communications')}</h1>
         <div className="page-actions">
           <select className="form-control" value={selectedEvent} onChange={e => setSelectedEvent(e.target.value)} style={{ width: 220 }}>
             {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
           </select>
-          <button className="btn btn-primary" onClick={() => setModal(true)}>📢 Send Message</button>
+          <button className="btn btn-primary" onClick={() => setModal(true)}>📢 {t('sendMessage')}</button>
         </div>
       </div>
 
@@ -98,9 +100,9 @@ const Communications = () => {
       </div>
 
       <div className="card">
-        <div className="card-header"><h3>Message History</h3></div>
+        <div className="card-header"><h3>{t('messageHistory')}</h3></div>
         {comms.length === 0 ? (
-          <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">💬</div><h3>No messages sent</h3><p>Send a message to all guests for this event.</p></div>
+          <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">💬</div><h3>{t('noMessages')}</h3><p>{t('sendMessage')}</p></div>
         ) : (
           <div>
             {comms.map(c => {
@@ -115,18 +117,18 @@ const Communications = () => {
                       <p style={{ fontSize: 14, marginBottom: 10 }}>{c.message}</p>
                       <div style={{ display: 'flex', gap: 20, fontSize: 12 }}>
                         <span style={{ color: 'var(--text-muted)' }}>👤 {c.sentBy?.name} · {new Date(c.createdAt).toLocaleString()}</span>
-                        <span style={{ color: 'var(--info)' }}>📤 Sent to {total} guests</span>
-                        <span style={{ color: 'var(--success)' }}>👁️ {seen} seen</span>
-                        {unseen > 0 && <span style={{ color: 'var(--warning)' }}>⚠️ {unseen} not seen</span>}
+                        <span style={{ color: 'var(--info)' }}>📤 {t('sentTo')} {total}</span>
+                        <span style={{ color: 'var(--success)' }}>👁️ {seen} {t('seen')}</span>
+                        {unseen > 0 && <span style={{ color: 'var(--warning)' }}>⚠️ {unseen} {t('notSeen')}</span>}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <button className="btn btn-ghost btn-sm" title="Share via WhatsApp" style={{ color: '#25d366', border: '1px solid #25d366', fontSize: 12 }}
                         onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(c.message)}`, '_blank')}>
-                        📲 WhatsApp
+                        📲 {t('whatsapp')}
                       </button>
                       {unseen > 0 && !c.isFollowUp && (
-                        <button className="btn btn-outline btn-sm" onClick={() => setFollowUpModal(c)}>Send Follow-Up</button>
+                        <button className="btn btn-outline btn-sm" onClick={() => setFollowUpModal(c)}>{t('sendFollowUp')}</button>
                       )}
                     </div>
                   </div>
@@ -140,10 +142,10 @@ const Communications = () => {
         )}
       </div>
 
-      <Modal isOpen={modal} onClose={() => { setModal(false); setSendMode('all'); setSelectedGuests([]); setMessage(''); }} title="Send Message to Guests"
+      <Modal isOpen={modal} onClose={() => { setModal(false); setSendMode('all'); setSelectedGuests([]); setMessage(''); }} title={t('sendMessage')}
         footer={
           <>
-            <button className="btn btn-ghost" onClick={() => { setModal(false); setSendMode('all'); setSelectedGuests([]); setMessage(''); }}>Cancel</button>
+            <button className="btn btn-ghost" onClick={() => { setModal(false); setSendMode('all'); setSelectedGuests([]); setMessage(''); }}>{t('cancel')}</button>
             <button className="btn btn-primary" onClick={handleSend} disabled={sending}>
               {sending ? 'Sending...' : sendMode === 'specific' ? `Send to ${selectedGuests.length} Guest${selectedGuests.length !== 1 ? 's' : ''}` : `Send to All ${guests.length} Guests`}
             </button>
@@ -153,17 +155,17 @@ const Communications = () => {
         {/* Toggle */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
           <button type="button" className={`btn btn-sm ${sendMode === 'all' ? 'btn-primary' : 'btn-outline'}`} style={{ flex: 1 }} onClick={() => { setSendMode('all'); setSelectedGuests([]); }}>
-            📢 All Guests ({guests.length})
+            📢 {t('allGuests')} ({guests.length})
           </button>
           <button type="button" className={`btn btn-sm ${sendMode === 'specific' ? 'btn-primary' : 'btn-outline'}`} style={{ flex: 1 }} onClick={() => setSendMode('specific')}>
-            👤 Specific Guest(s)
+            👤 {t('specificGuests')}
           </button>
         </div>
 
         {/* Guest selector (shown only in specific mode) */}
         {sendMode === 'specific' && (
           <div className="card card-body mb-4" style={{ padding: '12px 16px', maxHeight: 200, overflowY: 'auto' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>SELECT RECIPIENTS</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>{t('selectRecipients')}</div>
             {guests.length === 0 ? (
               <p className="text-muted text-sm">No guests found for this event.</p>
             ) : guests.map(g => (
@@ -177,28 +179,28 @@ const Communications = () => {
             ))}
             {guests.length > 0 && (
               <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedGuests(guests.map(g => g._id))}>Select All</button>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedGuests([])}>Clear</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedGuests(guests.map(g => g._id))}>{t('selectAll')}</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedGuests([])}>{t('clear')}</button>
               </div>
             )}
           </div>
         )}
 
         <div className="form-group">
-          <label className="form-label">Message *</label>
+          <label className="form-label">{t('message2')} *</label>
           <textarea className="form-control" rows={4} placeholder="Type your message here..." value={message} onChange={e => setMessage(e.target.value)} />
         </div>
       </Modal>
 
-      <Modal isOpen={Boolean(followUpModal)} onClose={() => setFollowUpModal(null)} title="Send Follow-Up Message"
-        footer={<><button className="btn btn-ghost" onClick={() => setFollowUpModal(null)}>Cancel</button><button className="btn btn-primary" onClick={handleFollowUp} disabled={sending}>{sending ? 'Sending...' : 'Send Follow-Up'}</button></>}>
+      <Modal isOpen={Boolean(followUpModal)} onClose={() => setFollowUpModal(null)} title={t('sendFollowUp')}
+        footer={<><button className="btn btn-ghost" onClick={() => setFollowUpModal(null)}>{t('cancel')}</button><button className="btn btn-primary" onClick={handleFollowUp} disabled={sending}>{sending ? 'Sending...' : t('sendFollowUp')}</button></>}>
         {followUpModal && (
           <div>
             <div className="alert alert-info mb-4">
               This follow-up will be sent to guests who have NOT seen the original message ({(followUpModal.recipients?.length || 0) - (followUpModal.seenBy?.length || 0)} guests).
             </div>
             <div className="form-group">
-              <label className="form-label">Follow-Up Message</label>
+              <label className="form-label">{t('followUpMessage')}</label>
               <textarea className="form-control" rows={4} placeholder="Type follow-up message..." value={followUpMsg} onChange={e => setFollowUpMsg(e.target.value)} />
             </div>
           </div>

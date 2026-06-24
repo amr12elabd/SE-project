@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { reportsAPI, venuesAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -7,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 const COLORS = ['#1a6b5c', '#d4875a', '#2563eb', '#38a169', '#805ad5'];
 
 const VenueReports = () => {
+  const { t } = useLang();
   const toast = useToast();
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState('');
@@ -85,12 +87,12 @@ const VenueReports = () => {
   return (
     <div>
       <div className="page-header">
-        <h1>📊 Venue Reports</h1>
+        <h1>📊 {t('reports')}</h1>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <select className="form-control" style={{ width: 220 }} value={selectedVenue} onChange={e => setSelectedVenue(e.target.value)}>
             {venues.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
           </select>
-          {report && <button className="btn btn-outline" onClick={handleExportCSV}>📥 Export CSV</button>}
+          {report && <button className="btn btn-outline" onClick={handleExportCSV}>{t('exportCSVReport')}</button>}
         </div>
       </div>
 
@@ -103,25 +105,25 @@ const VenueReports = () => {
           <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
             <div className="stat-card" style={{ flex: 1 }}>
               <div className="stat-icon" style={{ background: '#e8f5f2', color: 'var(--primary)' }}>📅</div>
-              <div className="stat-info"><div className="stat-value">{report.bookings?.total || 0}</div><div className="stat-label">Total Requests</div></div>
+              <div className="stat-info"><div className="stat-value">{report.bookings?.total || 0}</div><div className="stat-label">{t('totalBookings')}</div></div>
             </div>
             <div className="stat-card" style={{ flex: 1 }}>
               <div className="stat-icon" style={{ background: '#f0fff4', color: 'var(--success)' }}>✅</div>
-              <div className="stat-info"><div className="stat-value">{report.bookings?.approved || 0}</div><div className="stat-label">Confirmed Bookings</div></div>
+              <div className="stat-info"><div className="stat-value">{report.bookings?.approved || 0}</div><div className="stat-label">{t('confirmedCount')}</div></div>
             </div>
             <div className="stat-card" style={{ flex: 1 }}>
               <div className="stat-icon" style={{ background: '#fff3e0', color: 'var(--secondary)' }}>⭐</div>
-              <div className="stat-info"><div className="stat-value">{report.venue?.rating ? report.venue.rating.toFixed(1) : '—'}</div><div className="stat-label">Avg Rating</div></div>
+              <div className="stat-info"><div className="stat-value">{report.venue?.rating ? report.venue.rating.toFixed(1) : '—'}</div><div className="stat-label">{t('avgRatingVenue')}</div></div>
             </div>
             <div className="stat-card" style={{ flex: 1 }}>
               <div className="stat-icon" style={{ background: '#f5f3ff', color: '#805ad5' }}>💬</div>
-              <div className="stat-info"><div className="stat-value">{report.venue?.reviewCount || 0}</div><div className="stat-label">Reviews</div></div>
+              <div className="stat-info"><div className="stat-value">{report.venue?.reviewCount || 0}</div><div className="stat-label">{t('reviewCount')}</div></div>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
             <div className="card card-body">
-              <h3 className="mb-4">Booking Request Status</h3>
+              <h3 className="mb-4">{t('bookingStatus')}</h3>
               {bookingStatusData.length === 0 ? (
                 <div className="empty-state" style={{ height: 200 }}><p>No booking data yet</p></div>
               ) : (
@@ -138,16 +140,16 @@ const VenueReports = () => {
             </div>
 
             <div className="card card-body">
-              <h3 className="mb-4">Feedback Summary</h3>
+              <h3 className="mb-4">{t('feedbackSummary')}</h3>
               {!report.feedback?.count ? (
                 <div className="empty-state" style={{ height: 200 }}><p>No feedback yet for this venue</p></div>
               ) : (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
                     {[
-                      { label: 'Overall', value: report.feedback?.avgOverall },
-                      { label: 'Venue & Ambience', value: report.feedback?.avgVenue },
-                      { label: 'Organization', value: report.feedback?.avgOrganization },
+                      { label: t('overallExperience'), value: report.feedback?.avgOverall },
+                      { label: t('venueAmbience'), value: report.feedback?.avgVenue },
+                      { label: t('organization'), value: report.feedback?.avgOrganization },
                     ].map(item => (
                       <div key={item.label}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
@@ -187,9 +189,9 @@ const VenueReports = () => {
           <div className="card card-body mt-4">
             <h3 className="mb-4">Venue Details</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, fontSize: 14 }}>
-              <div><span className="text-muted">Capacity</span><div style={{ fontWeight: 600 }}>{report.venue?.capacity} persons</div></div>
-              <div><span className="text-muted">Location</span><div style={{ fontWeight: 600 }}>{report.venue?.location?.area}, {report.venue?.location?.city}</div></div>
-              <div><span className="text-muted">Price per Day</span><div style={{ fontWeight: 600 }}>EGP {report.venue?.pricing?.perDay?.toLocaleString()}</div></div>
+              <div><span className="text-muted">{t('capacity')}</span><div style={{ fontWeight: 600 }}>{report.venue?.capacity} persons</div></div>
+              <div><span className="text-muted">{t('location')}</span><div style={{ fontWeight: 600 }}>{report.venue?.location?.area}, {report.venue?.location?.city}</div></div>
+              <div><span className="text-muted">{t('pricePerDay')}</span><div style={{ fontWeight: 600 }}>EGP {report.venue?.pricing?.perDay?.toLocaleString()}</div></div>
             </div>
           </div>
         </>
