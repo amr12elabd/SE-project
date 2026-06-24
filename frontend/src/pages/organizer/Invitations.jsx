@@ -106,9 +106,17 @@ const Invitations = () => {
                 </label>
               ))}
             </div>
-            <button className="btn btn-primary btn-block" onClick={handleSend} disabled={sending || selectedGuests.length === 0}>
-              {sending ? 'Sending...' : `Send to ${selectedGuests.length} Guest${selectedGuests.length !== 1 ? 's' : ''}`}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSend} disabled={sending || selectedGuests.length === 0}>
+                {sending ? 'Sending...' : `Send to ${selectedGuests.length} Guest${selectedGuests.length !== 1 ? 's' : ''}`}
+              </button>
+              {message.trim() && (
+                <button className="btn btn-ghost btn-sm" title="Share invitation via WhatsApp" style={{ color: '#25d366', border: '1px solid #25d366', padding: '0 14px' }}
+                  onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited! ${message}`)}`, '_blank')}>
+                  📲 WhatsApp
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

@@ -120,9 +120,15 @@ const Communications = () => {
                         {unseen > 0 && <span style={{ color: 'var(--warning)' }}>⚠️ {unseen} not seen</span>}
                       </div>
                     </div>
-                    {unseen > 0 && !c.isFollowUp && (
-                      <button className="btn btn-outline btn-sm" onClick={() => setFollowUpModal(c)}>Send Follow-Up</button>
-                    )}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <button className="btn btn-ghost btn-sm" title="Share via WhatsApp" style={{ color: '#25d366', border: '1px solid #25d366', fontSize: 12 }}
+                        onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(c.message)}`, '_blank')}>
+                        📲 WhatsApp
+                      </button>
+                      {unseen > 0 && !c.isFollowUp && (
+                        <button className="btn btn-outline btn-sm" onClick={() => setFollowUpModal(c)}>Send Follow-Up</button>
+                      )}
+                    </div>
                   </div>
                   <div style={{ width: '100%', background: 'var(--border)', height: 4, borderRadius: 2 }}>
                     <div style={{ width: `${total > 0 ? (seen / total) * 100 : 0}%`, background: 'var(--success)', height: '100%', borderRadius: 2, transition: 'width 0.5s' }} />
