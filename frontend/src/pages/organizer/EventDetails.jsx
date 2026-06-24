@@ -61,7 +61,16 @@ const EventDetails = () => {
             🕐 {event.startTime} – {event.endTime}
           </p>
         </div>
-        <button className="btn btn-outline" onClick={() => navigate(`/events/${id}/edit`)}>✏️ Edit Event</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)' }} title="Export to Google Calendar / Apple Calendar" onClick={() => {
+            const d = new Date(event.date);
+            const fmt = (dt, t) => { const [h, m] = (t || '00:00').split(':'); const nd = new Date(dt); nd.setHours(+h, +m); return nd.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'; };
+            const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PopEyez//EN', 'BEGIN:VEVENT', `DTSTART:${fmt(d, event.startTime)}`, `DTEND:${fmt(d, event.endTime)}`, `SUMMARY:${event.name}`, `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`, `LOCATION:${event.venue?.name || ''}, ${event.venue?.location?.area || 'Cairo'}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+            const blob = new Blob([ics], { type: 'text/calendar' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${event.name.replace(/\s+/g, '-')}.ics`; a.click();
+          }}>📅 Add to Calendar</button>
+          <button className="btn btn-outline" onClick={() => navigate(`/events/${id}/edit`)}>✏️ Edit Event</button>
+        </div>
       </div>
 
       {/* Countdown Banner */}
