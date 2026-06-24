@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const translations = {
   en: {
@@ -15,6 +15,14 @@ const translations = {
     attending: 'Attending', notAttending: 'Not Attending', maybe: 'Maybe',
     approved: 'Approved', declined: 'Declined', pending: 'Pending',
     logout: 'Logout', language: 'Language',
+    overview: 'Overview', venue: 'Venue', operations: 'Operations',
+    vendorsGuests: 'Vendors & Guests', dayOfSection: 'Day-Of', insights: 'Insights', account: 'Account',
+    myEvents: 'My Events', myTasks: 'My Tasks', floorPlan: 'View Floor Plan',
+    checkIn: 'Guest Check-In', vendorArrivals: 'Vendor Arrivals',
+    catalogue: 'Product Catalogue', orders: 'Orders', delivery: 'Delivery Status',
+    finance: 'Finance', submitInvoice: 'Submit Invoice', invoiceStatus: 'Invoice Status',
+    myVenues: 'My Venues', confirmedBookings: 'Confirmed Bookings',
+    dayOfMessages: 'Day-Of Messages', qrPass: 'QR Check-In Pass', submitFeedback: 'Submit Feedback',
   },
   ar: {
     dashboard: 'لوحة التحكم', events: 'الفعاليات', venues: 'البحث عن أماكن',
@@ -30,6 +38,14 @@ const translations = {
     attending: 'سأحضر', notAttending: 'لن أحضر', maybe: 'ربما',
     approved: 'موافق', declined: 'مرفوض', pending: 'قيد الانتظار',
     logout: 'تسجيل الخروج', language: 'اللغة',
+    overview: 'نظرة عامة', venue: 'المكان', operations: 'العمليات',
+    vendorsGuests: 'الموردون والضيوف', dayOfSection: 'يوم الفعالية', insights: 'التحليلات', account: 'الحساب',
+    myEvents: 'فعالياتي', myTasks: 'مهامي', floorPlan: 'عرض المخطط',
+    checkIn: 'تسجيل دخول الضيوف', vendorArrivals: 'وصول الموردين',
+    catalogue: 'كتالوج المنتجات', orders: 'الطلبات', delivery: 'حالة التوصيل',
+    finance: 'المالية', submitInvoice: 'إرسال فاتورة', invoiceStatus: 'حالة الفواتير',
+    myVenues: 'أماكني', confirmedBookings: 'الحجوزات المؤكدة',
+    dayOfMessages: 'رسائل يوم الفعالية', qrPass: 'بطاقة QR للدخول', submitFeedback: 'إرسال تقييم',
   },
 };
 
@@ -38,12 +54,16 @@ const LanguageContext = createContext(null);
 export const LanguageProvider = ({ children }) => {
   const [lang, setLang] = useState(localStorage.getItem('popeyez_lang') || 'en');
 
+  // Apply dir and lang on mount and whenever lang changes
+  useEffect(() => {
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   const toggleLang = () => {
     const next = lang === 'en' ? 'ar' : 'en';
     setLang(next);
     localStorage.setItem('popeyez_lang', next);
-    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = next;
   };
 
   const t = (key) => translations[lang][key] || translations.en[key] || key;

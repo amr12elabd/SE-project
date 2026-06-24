@@ -2,109 +2,109 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 
-const roleMenus = {
+const getRoleMenus = (t) => ({
   organizer: [
-    { section: 'Overview', items: [
-      { to: '/dashboard', icon: '🏠', label: 'Dashboard' },
-      { to: '/events', icon: '📅', label: 'Events' },
+    { section: t('overview') || 'Overview', items: [
+      { to: '/dashboard', icon: '🏠', label: t('dashboard') },
+      { to: '/events', icon: '📅', label: t('events') },
     ]},
-    { section: 'Venue', items: [
-      { to: '/venues', icon: '🏛️', label: 'Venue Search' },
-      { to: '/bookings', icon: '📋', label: 'Booking Requests' },
+    { section: t('venue') || 'Venue', items: [
+      { to: '/venues', icon: '🏛️', label: t('venues') },
+      { to: '/bookings', icon: '📋', label: t('bookings') },
     ]},
-    { section: 'Operations', items: [
-      { to: '/tasks', icon: '✅', label: 'Tasks & Workflow' },
-      { to: '/staff', icon: '👥', label: 'Staff Management' },
-      { to: '/budget', icon: '💰', label: 'Budget Management' },
-      { to: '/layout', icon: '🗺️', label: 'Venue Layout' },
+    { section: t('operations') || 'Operations', items: [
+      { to: '/tasks', icon: '✅', label: t('tasks') },
+      { to: '/staff', icon: '👥', label: t('staff') },
+      { to: '/budget', icon: '💰', label: t('budget') },
+      { to: '/layout', icon: '🗺️', label: t('layout') },
     ]},
-    { section: 'Vendors & Guests', items: [
-      { to: '/vendors', icon: '🚚', label: 'Vendor Directory' },
-      { to: '/sourcing', icon: '📦', label: 'Sourcing Requests' },
-      { to: '/invoices', icon: '🧾', label: 'Invoice Review' },
-      { to: '/guests', icon: '🎟️', label: 'Guest Management' },
-      { to: '/invitations', icon: '✉️', label: 'Invitations' },
+    { section: t('vendorsGuests') || 'Vendors & Guests', items: [
+      { to: '/vendors', icon: '🚚', label: t('vendors') },
+      { to: '/sourcing', icon: '📦', label: t('sourcing') },
+      { to: '/invoices', icon: '🧾', label: t('invoices') },
+      { to: '/guests', icon: '🎟️', label: t('guests') },
+      { to: '/invitations', icon: '✉️', label: t('invitations') },
     ]},
-    { section: 'Day-Of', items: [
-      { to: '/day-of', icon: '⚡', label: 'Day-Of Dashboard' },
-      { to: '/communications', icon: '💬', label: 'Communications' },
+    { section: t('dayOfSection') || 'Day-Of', items: [
+      { to: '/day-of', icon: '⚡', label: t('dayOf') },
+      { to: '/communications', icon: '💬', label: t('communications') },
     ]},
-    { section: 'Insights', items: [
-      { to: '/feedback', icon: '⭐', label: 'Feedback Review' },
-      { to: '/reports', icon: '📊', label: 'Reports & Analytics' },
+    { section: t('insights') || 'Insights', items: [
+      { to: '/feedback', icon: '⭐', label: t('feedback') },
+      { to: '/reports', icon: '📊', label: t('reports') },
     ]},
-    { section: 'Account', items: [
-      { to: '/profile', icon: '👤', label: 'My Profile' },
-      { to: '/notifications', icon: '🔔', label: 'Notifications' },
-      { to: '/history', icon: '🕑', label: 'Transaction History' },
+    { section: t('account') || 'Account', items: [
+      { to: '/profile', icon: '👤', label: t('profile') },
+      { to: '/notifications', icon: '🔔', label: t('notifications') },
+      { to: '/history', icon: '🕑', label: t('history') },
     ]},
   ],
   staff: [
-    { section: 'Overview', items: [
-      { to: '/dashboard', icon: '🏠', label: 'Dashboard' },
-      { to: '/my-events', icon: '📅', label: 'My Events' },
-      { to: '/my-tasks', icon: '✅', label: 'My Tasks' },
+    { section: t('overview') || 'Overview', items: [
+      { to: '/dashboard', icon: '🏠', label: t('dashboard') },
+      { to: '/my-events', icon: '📅', label: t('myEvents') || 'My Events' },
+      { to: '/my-tasks', icon: '✅', label: t('myTasks') || 'My Tasks' },
     ]},
-    { section: 'Day-Of', items: [
-      { to: '/layout-view', icon: '🗺️', label: 'View Floor Plan' },
-      { to: '/checkin', icon: '🎟️', label: 'Guest Check-In' },
-      { to: '/vendor-arrivals', icon: '🚚', label: 'Vendor Arrivals' },
+    { section: t('dayOfSection') || 'Day-Of', items: [
+      { to: '/layout-view', icon: '🗺️', label: t('floorPlan') || 'View Floor Plan' },
+      { to: '/checkin', icon: '🎟️', label: t('checkIn') || 'Guest Check-In' },
+      { to: '/vendor-arrivals', icon: '🚚', label: t('vendorArrivals') || 'Vendor Arrivals' },
     ]},
-    { section: 'Account', items: [
-      { to: '/profile', icon: '👤', label: 'My Profile' },
-      { to: '/notifications', icon: '🔔', label: 'Notifications' },
-      { to: '/history', icon: '🕑', label: 'Transaction History' },
+    { section: t('account') || 'Account', items: [
+      { to: '/profile', icon: '👤', label: t('profile') },
+      { to: '/notifications', icon: '🔔', label: t('notifications') },
+      { to: '/history', icon: '🕑', label: t('history') },
     ]},
   ],
   vendor: [
-    { section: 'Overview', items: [
-      { to: '/dashboard', icon: '🏠', label: 'Dashboard' },
-      { to: '/vendor/profile', icon: '🏢', label: 'My Profile' },
-      { to: '/vendor/catalogue', icon: '📋', label: 'Product Catalogue' },
+    { section: t('overview') || 'Overview', items: [
+      { to: '/dashboard', icon: '🏠', label: t('dashboard') },
+      { to: '/vendor/profile', icon: '🏢', label: t('profile') },
+      { to: '/vendor/catalogue', icon: '📋', label: t('catalogue') || 'Product Catalogue' },
     ]},
-    { section: 'Orders', items: [
-      { to: '/vendor/sourcing', icon: '📥', label: 'Sourcing Requests' },
-      { to: '/vendor/delivery', icon: '🚚', label: 'Delivery Status' },
+    { section: t('orders') || 'Orders', items: [
+      { to: '/vendor/sourcing', icon: '📥', label: t('sourcing') },
+      { to: '/vendor/delivery', icon: '🚚', label: t('delivery') || 'Delivery Status' },
     ]},
-    { section: 'Finance', items: [
-      { to: '/vendor/submit-invoice', icon: '🧾', label: 'Submit Invoice' },
-      { to: '/vendor/invoices', icon: '💳', label: 'Invoice Status' },
+    { section: t('finance') || 'Finance', items: [
+      { to: '/vendor/submit-invoice', icon: '🧾', label: t('submitInvoice') || 'Submit Invoice' },
+      { to: '/vendor/invoices', icon: '💳', label: t('invoiceStatus') || 'Invoice Status' },
     ]},
-    { section: 'Account', items: [
-      { to: '/notifications', icon: '🔔', label: 'Notifications' },
-      { to: '/history', icon: '🕑', label: 'Transaction History' },
+    { section: t('account') || 'Account', items: [
+      { to: '/notifications', icon: '🔔', label: t('notifications') },
+      { to: '/history', icon: '🕑', label: t('history') },
     ]},
   ],
   guest: [
-    { section: 'My Events', items: [
-      { to: '/dashboard', icon: '🏠', label: 'Dashboard' },
-      { to: '/guest/invitation', icon: '✉️', label: 'My Invitations' },
-      { to: '/guest/messages', icon: '💬', label: 'Day-Of Messages' },
-      { to: '/guest/qr', icon: '📱', label: 'QR Check-In Pass' },
-      { to: '/guest/feedback', icon: '⭐', label: 'Submit Feedback' },
+    { section: t('myEvents') || 'My Events', items: [
+      { to: '/dashboard', icon: '🏠', label: t('dashboard') },
+      { to: '/guest/invitation', icon: '✉️', label: t('invitations') },
+      { to: '/guest/messages', icon: '💬', label: t('dayOfMessages') || 'Day-Of Messages' },
+      { to: '/guest/qr', icon: '📱', label: t('qrPass') || 'QR Check-In Pass' },
+      { to: '/guest/feedback', icon: '⭐', label: t('submitFeedback') || 'Submit Feedback' },
     ]},
-    { section: 'Account', items: [
-      { to: '/profile', icon: '👤', label: 'My Profile' },
-      { to: '/history', icon: '🕑', label: 'Transaction History' },
+    { section: t('account') || 'Account', items: [
+      { to: '/profile', icon: '👤', label: t('profile') },
+      { to: '/history', icon: '🕑', label: t('history') },
     ]},
   ],
   venueOwner: [
-    { section: 'Overview', items: [
-      { to: '/dashboard', icon: '🏠', label: 'Dashboard' },
-      { to: '/venue/listings', icon: '🏛️', label: 'My Venues' },
-      { to: '/venue/bookings', icon: '📋', label: 'Booking Requests' },
-      { to: '/venue/confirmed', icon: '✅', label: 'Confirmed Bookings' },
+    { section: t('overview') || 'Overview', items: [
+      { to: '/dashboard', icon: '🏠', label: t('dashboard') },
+      { to: '/venue/listings', icon: '🏛️', label: t('myVenues') || 'My Venues' },
+      { to: '/venue/bookings', icon: '📋', label: t('bookings') },
+      { to: '/venue/confirmed', icon: '✅', label: t('confirmedBookings') || 'Confirmed Bookings' },
     ]},
-    { section: 'Insights', items: [
-      { to: '/venue/reports', icon: '📊', label: 'Performance Reports' },
+    { section: t('insights') || 'Insights', items: [
+      { to: '/venue/reports', icon: '📊', label: t('reports') },
     ]},
-    { section: 'Account', items: [
-      { to: '/profile', icon: '👤', label: 'My Profile' },
-      { to: '/notifications', icon: '🔔', label: 'Notifications' },
-      { to: '/history', icon: '🕑', label: 'Transaction History' },
+    { section: t('account') || 'Account', items: [
+      { to: '/profile', icon: '👤', label: t('profile') },
+      { to: '/notifications', icon: '🔔', label: t('notifications') },
+      { to: '/history', icon: '🕑', label: t('history') },
     ]},
   ],
-};
+});
 
 const roleColors = {
   organizer: '#1a6b5c', staff: '#2563eb', vendor: '#7c3aed', guest: '#d4875a', venueOwner: '#0891b2'
@@ -117,7 +117,7 @@ const Sidebar = () => {
 
   if (!user) return null;
 
-  const menu = roleMenus[user.role] || [];
+  const menu = getRoleMenus(t)[user.role] || [];
   const initials = user.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   const color = roleColors[user.role] || 'var(--primary)';
   const roleLabel = {
