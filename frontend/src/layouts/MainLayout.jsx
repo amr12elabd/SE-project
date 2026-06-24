@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { useLang } from '../context/LanguageContext';
 import { notificationsAPI, eventsAPI, guestsAPI } from '../api';
 import { ToastProvider, useToast } from '../components/Toast';
 
@@ -31,6 +32,7 @@ const SocketNotificationListener = () => {
 const MainLayout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { lang, toggleLang } = useLang();
   const [unreadCount, setUnreadCount] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [reminder, setReminder] = useState(null); // { eventName, guests[] }
@@ -142,6 +144,9 @@ const MainLayout = () => {
               style={{ display: 'none' }} id="mobile-menu-btn">☰</button>
             <span className="navbar-title">PopEyez Platform</span>
             <div className="navbar-actions">
+              <button onClick={toggleLang} title="Toggle Arabic/English" style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {lang === 'en' ? '🇪🇬 عربي' : '🇬🇧 EN'}
+              </button>
               <div className="notif-badge" onClick={() => navigate('/notifications')} title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'} style={{ position: 'relative' }}>
                 🔔
                 {unreadCount > 0 && (

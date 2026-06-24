@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LanguageContext';
 
 const roleMenus = {
   organizer: [
@@ -112,13 +113,20 @@ const roleColors = {
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t, lang } = useLang();
 
   if (!user) return null;
 
   const menu = roleMenus[user.role] || [];
   const initials = user.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   const color = roleColors[user.role] || 'var(--primary)';
-  const roleLabel = { organizer: 'Event Organizer', staff: 'Staff Member', vendor: 'Vendor', guest: 'Guest', venueOwner: 'Venue Owner' };
+  const roleLabel = {
+    organizer: lang === 'ar' ? 'منظم فعاليات' : 'Event Organizer',
+    staff: lang === 'ar' ? 'فريق العمل' : 'Staff Member',
+    vendor: lang === 'ar' ? 'مورد' : 'Vendor',
+    guest: lang === 'ar' ? 'ضيف' : 'Guest',
+    venueOwner: lang === 'ar' ? 'مالك المكان' : 'Venue Owner',
+  };
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
