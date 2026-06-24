@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { invoicesAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Modal from '../../components/Modal';
@@ -16,6 +17,7 @@ const statusColors = {
 };
 
 const InvoiceReview = () => {
+  const { t } = useLang();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -51,16 +53,16 @@ const InvoiceReview = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>Invoice Review</h1></div>
+      <div className="page-header"><h1>{t('invoices')}</h1></div>
 
       {totalPending > 0 && (
         <div className="alert alert-warning mb-4">💰 {invoices.filter(i => i.status === 'Pending Review').length} invoices pending review, totaling {totalPending.toLocaleString()} EGP</div>
       )}
 
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search by vendor or invoice number..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
+        <input type="search" className="form-control" placeholder={t('searchInvoice')} value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="">All Statuses</option>
+          <option value="">{t('allStatuses2')}</option>
           {['Pending Review', 'Approved', 'Rejected', 'Paid'].map(s => <option key={s}>{s}</option>)}
         </select>
         <span className="text-muted text-sm">{invoices.length} invoices</span>
@@ -73,7 +75,7 @@ const InvoiceReview = () => {
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Invoice #</th><th>Vendor</th><th>Event</th><th>Total (EGP)</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
+                <tr><th>{t('invoiceNum')}</th><th>{t('vendor2')}</th><th>{t('event2')}</th><th>{t('total')}</th><th>{t('dueDate2')}</th><th>{t('status')}</th><th>{t('actions')}</th></tr>
               </thead>
               <tbody>
                 {invoices.filter(inv => !search || inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) || inv.vendor?.name?.toLowerCase().includes(search.toLowerCase())).map(inv => (

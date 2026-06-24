@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { vendorsAPI, eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Modal from '../../components/Modal';
 import { useToast } from '../../components/Toast';
 
 const VendorDirectory = () => {
+  const { t } = useLang();
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -63,12 +65,12 @@ const VendorDirectory = () => {
 
   return (
     <div>
-      <div className="page-header"><h1>Vendor Directory</h1></div>
+      <div className="page-header"><h1>{t('vendors')}</h1></div>
 
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search vendors..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input type="search" className="form-control" placeholder={t('searchVendors')} value={search} onChange={e => setSearch(e.target.value)} />
         <select className="form-control" value={category} onChange={e => setCategory(e.target.value)}>
-          <option value="">All Categories</option>
+          <option value="">{t('allCategories')}</option>
           {categories.map(c => <option key={c}>{c}</option>)}
         </select>
         <button className="btn btn-primary btn-sm" onClick={fetchVendors}>Search</button>
@@ -88,7 +90,7 @@ const VendorDirectory = () => {
                   <div className="text-sm text-muted">📍 {v.mainLocation}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
                     {'⭐'.repeat(Math.round(v.rating || 0))}
-                    <span className="text-xs text-muted">({v.reviewCount} reviews)</span>
+                    <span className="text-xs text-muted">({v.reviewCount} {t('reviews')})</span>
                   </div>
                 </div>
               </div>
@@ -114,8 +116,8 @@ const VendorDirectory = () => {
               )}
 
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-outline btn-sm" onClick={() => setSelected(v)}>View Details</button>
-                <button className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)' }} onClick={() => openRatingModal(v)}>⭐ Rate</button>
+                <button className="btn btn-outline btn-sm" onClick={() => setSelected(v)}>{t('viewDetails')}</button>
+                <button className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)' }} onClick={() => openRatingModal(v)}>{t('rateVendor')}</button>
               </div>
             </div>
           ))}

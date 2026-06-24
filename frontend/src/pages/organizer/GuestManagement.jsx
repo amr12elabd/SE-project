@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { guestsAPI, eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -10,6 +11,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 const dietaryOptions = ['Vegan', 'Vegetarian', 'Gluten Free', 'Dairy Free', 'Halal', 'Kosher', 'No Nuts'];
 
 const GuestManagement = () => {
+  const { t } = useLang();
   const [guests, setGuests] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,14 +102,14 @@ const GuestManagement = () => {
         title="Remove Guest" message={`Remove ${confirmRemove?.guestName} from this event? Their invitation and RSVP will be deleted.`} confirmLabel="Remove Guest" />
       <div className="page-header">
         <div>
-          <h1>Guest Management</h1>
+          <h1>{t('guests')}</h1>
           <p className="text-muted text-sm">{stats.attending} attending out of {stats.total} invited</p>
         </div>
-        <button className="btn btn-primary" onClick={() => openModal()}>+ Add Guest</button>
+        <button className="btn btn-primary" onClick={() => openModal()}>{t('addGuest')}</button>
       </div>
 
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search guests..." value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))} />
+        <input type="search" className="form-control" placeholder={t('searchGuests')} value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))} />
         <select className="form-control" value={filters.event} onChange={e => setFilters(f => ({ ...f, event: e.target.value }))}>
           <option value="">All Events</option>
           {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
@@ -126,7 +128,7 @@ const GuestManagement = () => {
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Guest</th><th>Event</th><th>Group</th><th>RSVP</th><th>Dietary</th><th>Check-In</th><th>Actions</th></tr>
+                <tr><th>{t('guestName')}</th><th>{t('event2')}</th><th>{t('group')}</th><th>{t('rsvpStatus')}</th><th>{t('dietaryPreferences')}</th><th>{t('checkedIn')}</th><th>{t('actions')}</th></tr>
               </thead>
               <tbody>
                 {guests.map(g => (
@@ -150,10 +152,10 @@ const GuestManagement = () => {
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button className="btn btn-ghost btn-sm" onClick={() => openModal(g)}>Edit</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => openModal(g)}>{t('edit')}</button>
                         <button className="btn btn-outline btn-sm" onClick={() => setQrGuest(g)} title="Show QR Code">QR</button>
                         <button className="btn btn-ghost btn-sm" title="Copy RSVP link" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/rsvp/${g.qrCodeValue}`); toast('RSVP link copied!', 'success'); }}>🔗</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmRemove(g)}>Del</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmRemove(g)}>{t('delete')}</button>
                       </div>
                     </td>
                   </tr>
@@ -164,15 +166,15 @@ const GuestManagement = () => {
         </div>
       )}
 
-      <Modal isOpen={modal} onClose={() => setModal(false)} title={editGuest ? 'Edit Guest' : 'Add Guest'} size="lg"
-        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editGuest ? 'Update' : 'Add Guest'}</button></>}>
+      <Modal isOpen={modal} onClose={() => setModal(false)} title={editGuest ? t('edit') : t('addGuest')} size="lg"
+        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>{t('cancel')}</button><button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editGuest ? t('save') : t('addGuest')}</button></>}>
         <form onSubmit={handleSave}>
           <div className="form-row">
-            <div className="form-group"><label className="form-label">Full Name *</label><input className="form-control" value={form.guestName} onChange={e => setForm(f => ({ ...f, guestName: e.target.value }))} /></div>
-            <div className="form-group"><label className="form-label">Email *</label><input type="email" className="form-control" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+            <div className="form-group"><label className="form-label">{t('guestName')}</label><input className="form-control" value={form.guestName} onChange={e => setForm(f => ({ ...f, guestName: e.target.value }))} /></div>
+            <div className="form-group"><label className="form-label">{t('email')}</label><input type="email" className="form-control" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
           </div>
           <div className="form-row">
-            <div className="form-group"><label className="form-label">Phone</label><input className="form-control" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+            <div className="form-group"><label className="form-label">{t('phone')}</label><input className="form-control" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
             <div className="form-group">
               <label className="form-label">Event *</label>
               <select className="form-control" value={form.event} onChange={e => setForm(f => ({ ...f, event: e.target.value }))}>
@@ -182,7 +184,7 @@ const GuestManagement = () => {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Group</label>
+              <label className="form-label">{t('group')}</label>
               <select className="form-control" value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))}>
                 {['General', 'VIP', 'Press', 'Staff', 'Sponsor'].map(g => <option key={g}>{g}</option>)}
               </select>
@@ -200,7 +202,7 @@ const GuestManagement = () => {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Special Requirements</label>
+            <label className="form-label">{t('specialRequirements')}</label>
             <textarea className="form-control" rows={2} value={form.specialRequirements} onChange={e => setForm(f => ({ ...f, specialRequirements: e.target.value }))} />
           </div>
         </form>

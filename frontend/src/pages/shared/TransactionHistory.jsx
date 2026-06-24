@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { activityAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
@@ -18,6 +19,7 @@ const StatusPill = ({ status }) => (
 );
 
 const TransactionHistory = () => {
+  const { t } = useLang();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -46,7 +48,7 @@ const TransactionHistory = () => {
     <div>
       <div className="page-header">
         <div>
-          <h1>🕑 Transaction History</h1>
+          <h1>🕑 {t('transactionHistory')}</h1>
           <p className="text-muted text-sm">{total} total transactions recorded</p>
         </div>
       </div>
@@ -54,7 +56,7 @@ const TransactionHistory = () => {
       {/* Filter */}
       <div className="filter-bar mb-4">
         <select className="form-control" value={filter} onChange={e => setFilter(e.target.value)} style={{ width: 200 }}>
-          <option value="">All Types</option>
+          <option value="">{t('allTypes')}</option>
           {['Booking', 'Invoice', 'SourcingRequest', 'Task', 'Guest', 'Event'].map(t => (
             <option key={t} value={t}>{ENTITY_ICONS[t]} {t}</option>
           ))}
@@ -66,7 +68,7 @@ const TransactionHistory = () => {
         <div className="card">
           <div className="empty-state">
             <div className="empty-state-icon">🕑</div>
-            <h3>No transaction history yet</h3>
+            <h3>{t('noData')}</h3>
             <p>Your actions on bookings, invoices, tasks, sourcing requests, and guests will appear here.</p>
           </div>
         </div>
@@ -76,11 +78,11 @@ const TransactionHistory = () => {
             <table>
               <thead>
                 <tr>
-                  <th>Date & Time</th>
-                  <th>Type</th>
-                  <th>Action</th>
-                  <th>Description</th>
-                  <th>Status Change</th>
+                  <th>{t('dateTime')}</th>
+                  <th>{t('type')}</th>
+                  <th>{t('action')}</th>
+                  <th>{t('description')}</th>
+                  <th>{t('statusChange')}</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usersAPI, tasksAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import Modal from '../../components/Modal';
 import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -7,6 +8,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { useToast } from '../../components/Toast';
 
 const StaffManagement = () => {
+  const { t } = useLang();
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -71,11 +73,11 @@ const StaffManagement = () => {
       <ConfirmModal isOpen={Boolean(confirmDeactivate)} onClose={() => setConfirmDeactivate(null)} onConfirm={handleDeactivate}
         title="Deactivate Staff Member" message={`Deactivate ${confirmDeactivate?.name}? They will no longer be able to log in or receive task assignments.`} confirmLabel="Deactivate" />
       <div className="page-header">
-        <h1>Team & Account Management</h1>
+        <h1>{t('staffManagement')}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-outline" onClick={() => { setCreateRole('vendor'); setCreateModal(true); }}>+ Add Vendor</button>
-          <button className="btn btn-outline" onClick={() => { setCreateRole('guest'); setCreateModal(true); }}>+ Add Guest</button>
-          <button className="btn btn-primary" onClick={() => { setCreateRole('staff'); setCreateModal(true); }}>+ Add Staff Member</button>
+          <button className="btn btn-outline" onClick={() => { setCreateRole('vendor'); setCreateModal(true); }}>{t('addVendor')}</button>
+          <button className="btn btn-outline" onClick={() => { setCreateRole('guest'); setCreateModal(true); }}>{t('addGuestAcc')}</button>
+          <button className="btn btn-primary" onClick={() => { setCreateRole('staff'); setCreateModal(true); }}>{t('addStaff')}</button>
         </div>
       </div>
 
@@ -99,7 +101,7 @@ const StaffManagement = () => {
             {s.bio && <p className="text-sm text-muted mb-3">{s.bio}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-outline btn-sm" onClick={() => viewStaffTasks(s)}>View Tasks</button>
-              {s.isActive && <button className="btn btn-danger btn-sm" onClick={() => setConfirmDeactivate(s)}>Deactivate</button>}
+              {s.isActive && <button className="btn btn-danger btn-sm" onClick={() => setConfirmDeactivate(s)}>{t('deactivate')}</button>}
             </div>
           </div>
         ))}
@@ -112,7 +114,7 @@ const StaffManagement = () => {
 
       {/* Create Modal */}
       <Modal isOpen={createModal} onClose={() => setCreateModal(false)} title={`Add ${createRole.charAt(0).toUpperCase() + createRole.slice(1)} Account`}
-        footer={<><button className="btn btn-ghost" onClick={() => setCreateModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleCreate} disabled={saving}>{saving ? 'Creating...' : 'Create Account'}</button></>}>
+        footer={<><button className="btn btn-ghost" onClick={() => setCreateModal(false)}>{t('cancel')}</button><button className="btn btn-primary" onClick={handleCreate} disabled={saving}>{saving ? 'Creating...' : t('save')}</button></>}>
         <form onSubmit={handleCreate}>
           <div className="form-row">
             <div className="form-group"><label className="form-label">Full Name *</label><input className="form-control" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>

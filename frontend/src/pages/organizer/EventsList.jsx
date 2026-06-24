@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { eventsAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -68,6 +69,7 @@ const CalendarView = ({ events, navigate }) => {
 };
 
 const EventsList = () => {
+  const { t } = useLang();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -117,20 +119,20 @@ const EventsList = () => {
         loading={deleting}
       />
       <div className="page-header">
-        <h1>Events</h1>
+        <h1>{t('events')}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
             <button className={`btn btn-sm ${view === 'list' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 0 }} onClick={() => setView('list')}>☰ List</button>
             <button className={`btn btn-sm ${view === 'calendar' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 0 }} onClick={() => setView('calendar')}>📅 Calendar</button>
           </div>
-          <button className="btn btn-primary" onClick={() => navigate('/events/new')}>+ Create Event</button>
+          <button className="btn btn-primary" onClick={() => navigate('/events/new')}>{t('createEvent')}</button>
         </div>
       </div>
 
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input type="search" className="form-control" placeholder={t('searchEvents')} value={search} onChange={e => setSearch(e.target.value)} />
         <select className="form-control" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-          <option value="">All Statuses</option>
+          <option value="">{t('allStatuses')}</option>
           {['Planning', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'].map(s => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -144,7 +146,7 @@ const EventsList = () => {
         <div className="card">
           <div className="empty-state">
             <div className="empty-state-icon">📅</div>
-            <h3>No events found</h3>
+            <h3>{t('noEventsFound')}</h3>
             <p>Create your first pop-up café event to get started.</p>
             <button className="btn btn-primary mt-4" onClick={() => navigate('/events/new')}>Create Event</button>
           </div>
@@ -172,9 +174,9 @@ const EventsList = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <button className="btn btn-outline btn-sm" onClick={e => { e.stopPropagation(); navigate(`/events/${ev._id}/edit`); }}>Edit</button>
+                  <button className="btn btn-outline btn-sm" onClick={e => { e.stopPropagation(); navigate(`/events/${ev._id}/edit`); }}>{t('edit')}</button>
                   <button className="btn btn-ghost btn-sm" style={{ border: '1px solid var(--border)' }} title="Duplicate this event with all tasks and budget" onClick={async e => { e.stopPropagation(); try { const r = await eventsAPI.duplicate(ev._id); setEvents(prev => [r.data, ...prev]); toast(`"${r.data.name}" created with all tasks and budget items duplicated!`, 'success'); navigate(`/events/${r.data._id}/edit`); } catch { toast('Failed to duplicate event', 'error'); } }}>⧉ Dup</button>
-                  <button className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); setConfirmDelete(ev); }}>Delete</button>
+                  <button className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); setConfirmDelete(ev); }}>{t('delete')}</button>
                 </div>
               </div>
             </div>

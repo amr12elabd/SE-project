@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { tasksAPI, eventsAPI, usersAPI } from '../../api';
+import { useLang } from '../../context/LanguageContext';
 import StatusBadge from '../../components/StatusBadge';
 import Modal from '../../components/Modal';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -8,6 +9,7 @@ import { useToast } from '../../components/Toast';
 import TaskKanban from './TaskKanban';
 
 const Tasks = () => {
+  const { t } = useLang();
   const [tasks, setTasks] = useState([]);
   const [events, setEvents] = useState([]);
   const [staff, setStaff] = useState([]);
@@ -94,20 +96,20 @@ const Tasks = () => {
       <ConfirmModal isOpen={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} onConfirm={handleDelete}
         title="Delete Task" message={`Delete "${confirmDelete?.title}"? This cannot be undone.`} confirmLabel="Delete Task" />
       <div className="page-header">
-        <h1>Tasks & Workflow</h1>
+        <h1>{t('tasks')}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
             <button className={`btn btn-sm ${view === 'list' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 0 }} onClick={() => setView('list')}>☰ List</button>
             <button className={`btn btn-sm ${view === 'kanban' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 0 }} onClick={() => setView('kanban')}>🗂️ Kanban</button>
           </div>
-          <button className="btn btn-primary" onClick={() => openModal()}>+ New Task</button>
+          <button className="btn btn-primary" onClick={() => openModal()}>{t('newTask')}</button>
         </div>
       </div>
 
       <div className="filter-bar">
-        <input type="search" className="form-control" placeholder="Search tasks..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
+        <input type="search" className="form-control" placeholder={t('searchTasks')} value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2 }} />
         <select className="form-control" value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-          <option value="">All Statuses</option>
+          <option value="">{t('allStatuses')}</option>
           {['Not Assigned', 'Pending', 'In Progress', 'Done'].map(s => <option key={s}>{s}</option>)}
         </select>
         <select className="form-control" value={filters.event} onChange={e => setFilters(f => ({ ...f, event: e.target.value }))}>
@@ -115,7 +117,7 @@ const Tasks = () => {
           {events.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
         </select>
         <select className="form-control" value={filters.priority} onChange={e => setFilters(f => ({ ...f, priority: e.target.value }))}>
-          <option value="">All Priorities</option>
+          <option value="">{t('allPriorities')}</option>
           {['Low', 'Medium', 'High'].map(p => <option key={p}>{p}</option>)}
         </select>
         <span className="text-muted text-sm">{tasks.length} tasks</span>
@@ -133,7 +135,7 @@ const Tasks = () => {
             <table>
               <thead>
                 <tr>
-                  <th>Task</th><th>Event</th><th>Assigned To</th><th>Priority</th><th>Due Date</th><th>Status</th><th>Actions</th>
+                  <th>{t('title')}</th><th>{t('event2')}</th><th>{t('assignedTo')}</th><th>{t('priority')}</th><th>{t('dueDate')}</th><th>{t('status')}</th><th>{t('actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -158,8 +160,8 @@ const Tasks = () => {
                     <td><StatusBadge status={t.status} /></td>
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button className="btn btn-ghost btn-sm" onClick={() => openModal(t)}>Edit</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(t)}>Del</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => openModal(t)}>{t('edit')}</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(t)}>{t('delete')}</button>
                       </div>
                     </td>
                   </tr>
@@ -171,7 +173,7 @@ const Tasks = () => {
       )}
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editTask ? 'Edit Task' : 'Create Task'}
-        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button><button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editTask ? 'Update' : 'Create'}</button></>}>
+        footer={<><button className="btn btn-ghost" onClick={() => setModal(false)}>{t('cancel')}</button><button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : editTask ? t('save') : 'Create'}</button></>}>
         <form onSubmit={handleSave}>
           <div className="form-group">
             <label className="form-label">Event *</label>
