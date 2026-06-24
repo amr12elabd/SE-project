@@ -5,6 +5,7 @@ import Modal from '../../components/Modal';
 import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useToast } from '../../components/Toast';
+import TaskKanban from './TaskKanban';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -16,6 +17,7 @@ const Tasks = () => {
   const [editTask, setEditTask] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [search, setSearch] = useState('');
+  const [view, setView] = useState('list');
   const [form, setForm] = useState({ event: '', title: '', description: '', assignedTo: '', speciality: '', dueDate: '', priority: 'Medium', status: 'Not Assigned' });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
@@ -93,7 +95,13 @@ const Tasks = () => {
         title="Delete Task" message={`Delete "${confirmDelete?.title}"? This cannot be undone.`} confirmLabel="Delete Task" />
       <div className="page-header">
         <h1>Tasks & Workflow</h1>
-        <button className="btn btn-primary" onClick={() => openModal()}>+ New Task</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+            <button className={`btn btn-sm ${view === 'list' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 0 }} onClick={() => setView('list')}>☰ List</button>
+            <button className={`btn btn-sm ${view === 'kanban' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 0 }} onClick={() => setView('kanban')}>🗂️ Kanban</button>
+          </div>
+          <button className="btn btn-primary" onClick={() => openModal()}>+ New Task</button>
+        </div>
       </div>
 
       <div className="filter-bar">
@@ -113,9 +121,13 @@ const Tasks = () => {
         <span className="text-muted text-sm">{tasks.length} tasks</span>
       </div>
 
-      {filteredTasks.length === 0 ? (
+      {view === 'kanban' && (
+        <TaskKanban tasks={filteredTasks} setTasks={setTasks} onEdit={openModal} />
+      )}
+
+      {view === 'list' && filteredTasks.length === 0 ? (
         <div className="card"><div className="empty-state"><div className="empty-state-icon">✅</div><h3>{search ? 'No tasks match your search' : 'No tasks found'}</h3><p>{search ? 'Try a different search term.' : 'Create your first task and assign it to a staff member.'}</p>{!search && <button className="btn btn-primary mt-4" onClick={() => openModal()}>+ Create First Task</button>}</div></div>
-      ) : (
+      ) : view === 'list' && (
         <div className="card">
           <div className="table-wrap">
             <table>
